@@ -1020,7 +1020,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
             <label><span class="ta-only">📅 எதிர்கால பலன் இடம் (பயணத்திற்கு ஏற்ப)</span><span class="en-only">📅 Location for the future outlook (travel-friendly)</span><select id="fPlace"></select></label>
           </div>
           <div style="margin-top:12px">
-            <button class="btn" onclick="exportFamilyChandraICS()">🌙 <span class="ta-only">சந்திராஷ்டம நாட்களை காலண்டரில் சேர் (.ics)</span><span class="en-only">Add chandrashtamam dates to my calendar (.ics)</span><span class="exp-pro">PRO</span></button>
+            <button class="btn" onclick="openIcsRange('family')">🌙 <span class="ta-only">சந்திராஷ்டம நாட்களை காலண்டரில் சேர் (.ics)</span><span class="en-only">Add chandrashtamam dates to my calendar (.ics)</span><span class="exp-pro">PRO</span></button>
             <p style="font-size:.74rem;color:var(--ink3);margin-top:5px"><span class="ta-only">குடும்பத்தில் ஒவ்வொருவரின் அடுத்த சந்திராஷ்டம நாட்கள் உங்கள் காலண்டரில் சேர்க்கப்படும் — நினைவூட்டலுடன்.</span><span class="en-only">Each family member's upcoming chandrashtamam days are added to your calendar — with a reminder.</span></p>
           </div>
         </div>
@@ -1155,6 +1155,27 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
 </footer>
 
 <!-- ===== PAYWALL ===== -->
+<!-- chandrashtamam calendar range chooser -->
+<div class="modal-back" id="icsRange">
+  <div class="modal" style="max-width:380px">
+    <button class="closex" onclick="closeIcsRange()">✕</button>
+    <div class="modal-top">
+      <div class="crown">🗓️</div>
+      <h3><span class="ta-only">சந்திராஷ்டமம் — காலண்டரில் சேர்</span><span class="en-only">Add chandrashtamam</span></h3>
+      <div class="sub" id="icsRangeSub"></div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-feat"><span class="ta-only">எவ்வளவு காலத்திற்கு சேர்க்க வேண்டும்?</span><span class="en-only">How far ahead should we add?</span></div>
+      <div class="cta-row">
+        <button class="go" onclick="runIcsRange('next')"><span class="ta-only">➊ அடுத்த சந்திராஷ்டமம் மட்டும்</span><span class="en-only">➊ Next chandrashtamam only</span></button>
+        <button class="go" onclick="runIcsRange('3m')" style="background:linear-gradient(135deg,var(--maroon),var(--maroon2));color:var(--gold-bright)"><span class="ta-only">➌ அடுத்த 3 மாதங்கள்</span><span class="en-only">➌ Next 3 months</span></button>
+        <button class="go" onclick="runIcsRange('year')" style="background:transparent;border:1.5px solid var(--gold-line);color:var(--maroon);box-shadow:none"><span class="ta-only">📅 இந்த ஆண்டு இறுதிவரை</span><span class="en-only">📅 Until end of this year</span></button>
+        <button class="later" onclick="closeIcsRange()"><span class="ta-only">ரத்து</span><span class="en-only">Cancel</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-back" id="paywall">
   <div class="modal">
     <button class="closex" onclick="closePaywall()">✕</button>
@@ -1733,11 +1754,23 @@ function icsDate(y,m,d){ return y+String(m).padStart(2,'0')+String(d).padStart(2
 function icsStamp(jd,tz){ const dt=new Date((jd-2440587.5)*86400000);                                 // JD → UTC timestamp
   const p=n=>String(n).padStart(2,'0');
   return dt.getUTCFullYear()+p(dt.getUTCMonth()+1)+p(dt.getUTCDate())+'T'+p(dt.getUTCHours())+p(dt.getUTCMinutes())+'00Z'; }
+function icsNow(){ const d=new Date(),p=n=>String(n).padStart(2,'0');
+  return d.getUTCFullYear()+p(d.getUTCMonth()+1)+p(d.getUTCDate())+'T'+p(d.getUTCHours())+p(d.getUTCMinutes())+p(d.getUTCSeconds())+'Z'; }
 function icsWrap(lines,calname){
   return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Nalla Neram//Panchangam//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:'+icsEsc(calname)]
     .concat(lines).concat(['END:VCALENDAR']).join('\r\n');
 }
+/* iOS/iPadOS Safari ignores the download attribute — route it through a data link
+   that opens Apple's "Add to Calendar" sheet. Desktop/Android use a normal download. */
+function isAppleMobile(){
+  return /iP(hone|ad|od)/.test(navigator.userAgent) ||
+         (navigator.platform==='MacIntel' && (navigator.maxTouchPoints||0)>1);   // iPadOS reports as Mac
+}
 function icsDownload(ics,fname){
+  if(isAppleMobile()){
+    window.location.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);
+    return;
+  }
   const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname;
   document.body.appendChild(a); a.click(); setTimeout(()=>{document.body.removeChild(a); URL.revokeObjectURL(a.href);},100);
@@ -1752,24 +1785,32 @@ function addDayICS(y,m,d){
   if(!ev||!ev.length){ toast(l==='en'?'No special day on this date':'இந்நாளில் சிறப்பு இல்லை'); return; }
   const names=ev.map(e=>e.replace(/^[^\p{L}\p{N}]*\s*/u,'').split('(')[0].trim()).join(', ');
   const next=new Date(y,m-1,d+1);
-  const ics=icsWrap(['BEGIN:VEVENT','UID:nn-fest-'+y+m+d+'@nallaneram',
+  const ics=icsWrap(['BEGIN:VEVENT','UID:nn-fest-'+y+m+d+'@nallaneram','DTSTAMP:'+icsNow(),'SEQUENCE:0',
     'DTSTART;VALUE=DATE:'+icsDate(y,m,d),
     'DTEND;VALUE=DATE:'+icsDate(next.getFullYear(),next.getMonth()+1,next.getDate()),
     'SUMMARY:🪔 '+icsEsc(names),'TRANSP:TRANSPARENT','END:VEVENT'], 'நல்ல நேரம் / Nalla Neram');
   icsDownload(ics,'nalla-neram-'+y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0')+'.ics');
   toast((l==='en'?'Added: ':'சேர்க்கப்பட்டது: ')+names);
 }
-/* add every family member's upcoming chandrashtamam windows to the calendar */
-/* build the VEVENT lines for ONE person's next ~6 chandrashtamam windows */
-function _memberChandraEvents(pr, nowJD, tz, l){
+/* how far ahead to include, by chosen range */
+function _rangeCutoff(mode, nowJD, tz){
+  if(mode==='next')  return null;                          // handled by slice(0,1)
+  if(mode==='3m')    return nowJD+92;
+  return julianDay(new Date().getFullYear(),12,31,23-tz);  // 'year' → end of this year
+}
+/* build VEVENT lines for ONE person's chandrashtamam windows within the chosen range */
+function _memberChandraEvents(pr, nowJD, tz, l, mode){
   const ev=[]; let count=0;
   try{
     const [by,bm,bd]=pr.dv.split('-').map(Number),[bh,bmin]=pr.tv.split(':').map(Number);
     const bjd=julianDay(by,bm,bd,bh+bmin/60-pr.tz);
     const jNak=Math.floor(sidereal(moonLon(bjd),bjd)/(360/27));
-    const wins=(typeof nextNCAWindows==='function')?nextNCAWindows(jNak,nowJD,6):[];
-    wins.forEach(w=>{ if(!w||w.start==null) return;
-      ev.push('BEGIN:VEVENT','UID:nn-ca-'+icsEsc(pr.name)+'-'+Math.round(w.start)+'@nallaneram',
+    let wins=(typeof nextNCAWindows==='function')?nextNCAWindows(jNak,nowJD,14):[];  // up to a year+
+    wins=wins.filter(w=>w&&w.start!=null);
+    if(mode==='next') wins=wins.slice(0,1);
+    else { const cut=_rangeCutoff(mode,nowJD,tz); wins=wins.filter(w=>w.start<cut); }
+    wins.forEach(w=>{
+      ev.push('BEGIN:VEVENT','UID:nn-ca-'+icsEsc(pr.name)+'-'+Math.round(w.start)+'@nallaneram','DTSTAMP:'+icsNow(),'SEQUENCE:0',
         'DTSTART:'+icsStamp(w.start,tz),'DTEND:'+icsStamp(w.end,tz),
         'SUMMARY:🌙 '+icsEsc((l==='en'?'Chandrashtamam — ':'சந்திராஷ்டமம் — ')+pr.name),
         'DESCRIPTION:'+icsEsc(l==='en'?'A cautious window — avoid starting important things.':'கவனம் தேவைப்படும் நேரம் — முக்கிய காரியங்களைத் தவிர்க்கவும்.'),
@@ -1781,31 +1822,50 @@ function _memberChandraEvents(pr, nowJD, tz, l){
   return {ev, count};
 }
 function _icsPlaceTz(){ let plc=null; try{ plc=getPlace('fPlace'); }catch(e){} if(!plc){ try{ plc=getPlace('pPlace'); }catch(e){} } return plc?plc.tz:5.5; }
-/* whole family */
-function exportFamilyChandraICS(){
-  if(!proExport()) return;
+
+/* ---- range chooser (so we don't spam a whole year) ---- */
+let _icsPending=null;
+function openIcsRange(kind,i){
+  if(!proExport()) return;                       // gate once, here
+  _icsPending={kind,i};
+  const l=curLang();
+  const sub=document.getElementById('icsRangeSub');
+  if(sub) sub.textContent = kind==='member'
+    ? (l==='en'?"This person's chandrashtamam":'இந்த நபரின் சந்திராஷ்டமம்')
+    : (l==='en'?'Whole family':'குடும்பம் முழுவதும்');
+  document.getElementById('icsRange').classList.add('show');
+}
+function closeIcsRange(){ const m=document.getElementById('icsRange'); if(m) m.classList.remove('show'); }
+function runIcsRange(mode){
+  const pend=_icsPending; closeIcsRange(); if(!pend) return;
+  if(pend.kind==='member') addMemberChandraICS(pend.i, mode);
+  else exportFamilyChandraICS(mode);
+}
+/* whole family, for the chosen range */
+function exportFamilyChandraICS(mode){
+  mode=mode||'3m';
   const l=curLang();
   const ps=(typeof loadProfiles==='function')?(loadProfiles()||[]):[];
   if(!ps.length){ toast(l==='en'?'Add a family member first':'முதலில் ஒருவரைப் பதிவு செய்யவும்'); return; }
   const tz=_icsPlaceTz(), now=new Date(), nowJD=julianDay(now.getFullYear(),now.getMonth()+1,now.getDate(),12-tz);
   let ev=[], count=0;
-  ps.forEach(pr=>{ const r=_memberChandraEvents(pr,nowJD,tz,l); ev=ev.concat(r.ev); count+=r.count; });
-  if(!count){ toast(l==='en'?'Could not compute dates':'கணிக்க முடியவில்லை'); return; }
+  ps.forEach(pr=>{ const r=_memberChandraEvents(pr,nowJD,tz,l,mode); ev=ev.concat(r.ev); count+=r.count; });
+  if(!count){ toast(l==='en'?'No chandrashtamam in this range':'இந்த வரம்பில் சந்திராஷ்டமம் இல்லை'); return; }
   icsDownload(icsWrap(ev, l==='en'?'Nalla Neram — Family Chandrashtamam':'நல்ல நேரம் — குடும்ப சந்திராஷ்டமம்'),'family-chandrashtamam.ics');
-  toast((l==='en'?'Downloaded '+count+' chandrashtamam dates for '+ps.length+' people':count+' சந்திராஷ்டம நாட்கள் — '+ps.length+' நபர்கள்'));
+  toast((l==='en'?'Downloaded '+count+' chandrashtamam dates':count+' சந்திராஷ்டம நாட்கள் பதிவிறக்கம்'));
 }
-/* ONE member — used by the button on each profile card */
-function addMemberChandraICS(i){
-  if(!proExport()) return;
+/* ONE member, for the chosen range */
+function addMemberChandraICS(i,mode){
+  mode=mode||'3m';
   const l=curLang();
   const pr=((typeof loadProfiles==='function')?(loadProfiles()||[]):[])[i];
   if(!pr){ toast(l==='en'?'Member not found':'நபர் இல்லை'); return; }
   const tz=_icsPlaceTz(), now=new Date(), nowJD=julianDay(now.getFullYear(),now.getMonth()+1,now.getDate(),12-tz);
-  const {ev,count}=_memberChandraEvents(pr,nowJD,tz,l);
-  if(!count){ toast(l==='en'?'Could not compute dates':'கணிக்க முடியவில்லை'); return; }
+  const {ev,count}=_memberChandraEvents(pr,nowJD,tz,l,mode);
+  if(!count){ toast(l==='en'?'No chandrashtamam in this range':'இந்த வரம்பில் சந்திராஷ்டமம் இல்லை'); return; }
   icsDownload(icsWrap(ev, (l==='en'?'Chandrashtamam — ':'சந்திராஷ்டமம் — ')+pr.name),
               ((pr.name||'member').replace(/\s+/g,'-'))+'-chandrashtamam.ics');
-  toast((l==='en'? (pr.name+' — '+count+' chandrashtamam dates added') : (pr.name+' — '+count+' சந்திராஷ்டம நாட்கள் சேர்க்கப்பட்டன')));
+  toast((l==='en'? (pr.name+' — '+count+' dates added') : (pr.name+' — '+count+' நாட்கள் சேர்க்கப்பட்டன')));
 }
 function gotoDate(y,m,d){
   document.getElementById('pDate').value=y+"-"+String(m).padStart(2,'0')+"-"+String(d).padStart(2,'0');
@@ -3067,7 +3127,7 @@ function decorateProfiles(){
   cards.forEach((card,i)=>{
     if(card.querySelector('.today-you')) return;
     const pr=ps[i]; if(!pr) return;
-    const icsBtn='<button class="ics-day" style="margin-top:10px" onclick="addMemberChandraICS('+i+')">'+
+    const icsBtn='<button class="ics-day" style="margin-top:10px" onclick="openIcsRange(\'member\','+i+')">'+
       '🗓️ '+T('சந்திராஷ்டம நாட்களை காலண்டரில் சேர்','Add chandrashtamam dates to calendar')+
       '<span class="exp-pro">PRO</span></button>';
     try{ card.insertAdjacentHTML('beforeend', dailyCardHTML(pr)+icsBtn); }catch(e){}
