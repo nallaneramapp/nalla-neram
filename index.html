@@ -1760,35 +1760,52 @@ function addDayICS(y,m,d){
   toast((l==='en'?'Added: ':'சேர்க்கப்பட்டது: ')+names);
 }
 /* add every family member's upcoming chandrashtamam windows to the calendar */
+/* build the VEVENT lines for ONE person's next ~6 chandrashtamam windows */
+function _memberChandraEvents(pr, nowJD, tz, l){
+  const ev=[]; let count=0;
+  try{
+    const [by,bm,bd]=pr.dv.split('-').map(Number),[bh,bmin]=pr.tv.split(':').map(Number);
+    const bjd=julianDay(by,bm,bd,bh+bmin/60-pr.tz);
+    const jNak=Math.floor(sidereal(moonLon(bjd),bjd)/(360/27));
+    const wins=(typeof nextNCAWindows==='function')?nextNCAWindows(jNak,nowJD,6):[];
+    wins.forEach(w=>{ if(!w||w.start==null) return;
+      ev.push('BEGIN:VEVENT','UID:nn-ca-'+icsEsc(pr.name)+'-'+Math.round(w.start)+'@nallaneram',
+        'DTSTART:'+icsStamp(w.start,tz),'DTEND:'+icsStamp(w.end,tz),
+        'SUMMARY:🌙 '+icsEsc((l==='en'?'Chandrashtamam — ':'சந்திராஷ்டமம் — ')+pr.name),
+        'DESCRIPTION:'+icsEsc(l==='en'?'A cautious window — avoid starting important things.':'கவனம் தேவைப்படும் நேரம் — முக்கிய காரியங்களைத் தவிர்க்கவும்.'),
+        'BEGIN:VALARM','ACTION:DISPLAY','TRIGGER:-PT12H','DESCRIPTION:'+icsEsc((l==='en'?'Chandrashtamam soon — ':'சந்திராஷ்டமம் வருகிறது — ')+pr.name),'END:VALARM',
+        'END:VEVENT');
+      count++;
+    });
+  }catch(e){}
+  return {ev, count};
+}
+function _icsPlaceTz(){ let plc=null; try{ plc=getPlace('fPlace'); }catch(e){} if(!plc){ try{ plc=getPlace('pPlace'); }catch(e){} } return plc?plc.tz:5.5; }
+/* whole family */
 function exportFamilyChandraICS(){
   if(!proExport()) return;
   const l=curLang();
   const ps=(typeof loadProfiles==='function')?(loadProfiles()||[]):[];
   if(!ps.length){ toast(l==='en'?'Add a family member first':'முதலில் ஒருவரைப் பதிவு செய்யவும்'); return; }
-  let plc=null; try{ plc=getPlace('fPlace'); }catch(e){} if(!plc){ try{ plc=getPlace('pPlace'); }catch(e){} }
-  const tz=plc?plc.tz:5.5;
-  const now=new Date(), nowJD=julianDay(now.getFullYear(),now.getMonth()+1,now.getDate(),12-tz);
+  const tz=_icsPlaceTz(), now=new Date(), nowJD=julianDay(now.getFullYear(),now.getMonth()+1,now.getDate(),12-tz);
   let ev=[], count=0;
-  ps.forEach(pr=>{
-    try{
-      const [by,bm,bd]=pr.dv.split('-').map(Number),[bh,bmin]=pr.tv.split(':').map(Number);
-      const bjd=julianDay(by,bm,bd,bh+bmin/60-pr.tz);
-      const jNak=Math.floor(sidereal(moonLon(bjd),bjd)/(360/27));
-      const wins=(typeof nextNCAWindows==='function')?nextNCAWindows(jNak,nowJD,6):[];   // ~6 windows ahead
-      wins.forEach((w,i)=>{ if(!w||w.start==null) return;
-        ev.push('BEGIN:VEVENT','UID:nn-ca-'+icsEsc(pr.name)+'-'+Math.round(w.start)+'@nallaneram',
-          'DTSTART:'+icsStamp(w.start,tz),'DTEND:'+icsStamp(w.end,tz),
-          'SUMMARY:🌙 '+icsEsc((l==='en'?'Chandrashtamam — ':'சந்திராஷ்டமம் — ')+pr.name),
-          'DESCRIPTION:'+icsEsc(l==='en'?'A cautious window — avoid starting important things.':'கவனம் தேவைப்படும் நேரம் — முக்கிய காரியங்களைத் தவிர்க்கவும்.'),
-          'BEGIN:VALARM','ACTION:DISPLAY','TRIGGER:-PT12H','DESCRIPTION:'+icsEsc((l==='en'?'Chandrashtamam soon — ':'சந்திராஷ்டமம் வருகிறது — ')+pr.name),'END:VALARM',
-          'END:VEVENT');
-        count++;
-      });
-    }catch(e){}
-  });
+  ps.forEach(pr=>{ const r=_memberChandraEvents(pr,nowJD,tz,l); ev=ev.concat(r.ev); count+=r.count; });
   if(!count){ toast(l==='en'?'Could not compute dates':'கணிக்க முடியவில்லை'); return; }
   icsDownload(icsWrap(ev, l==='en'?'Nalla Neram — Family Chandrashtamam':'நல்ல நேரம் — குடும்ப சந்திராஷ்டமம்'),'family-chandrashtamam.ics');
   toast((l==='en'?'Downloaded '+count+' chandrashtamam dates for '+ps.length+' people':count+' சந்திராஷ்டம நாட்கள் — '+ps.length+' நபர்கள்'));
+}
+/* ONE member — used by the button on each profile card */
+function addMemberChandraICS(i){
+  if(!proExport()) return;
+  const l=curLang();
+  const pr=((typeof loadProfiles==='function')?(loadProfiles()||[]):[])[i];
+  if(!pr){ toast(l==='en'?'Member not found':'நபர் இல்லை'); return; }
+  const tz=_icsPlaceTz(), now=new Date(), nowJD=julianDay(now.getFullYear(),now.getMonth()+1,now.getDate(),12-tz);
+  const {ev,count}=_memberChandraEvents(pr,nowJD,tz,l);
+  if(!count){ toast(l==='en'?'Could not compute dates':'கணிக்க முடியவில்லை'); return; }
+  icsDownload(icsWrap(ev, (l==='en'?'Chandrashtamam — ':'சந்திராஷ்டமம் — ')+pr.name),
+              ((pr.name||'member').replace(/\s+/g,'-'))+'-chandrashtamam.ics');
+  toast((l==='en'? (pr.name+' — '+count+' chandrashtamam dates added') : (pr.name+' — '+count+' சந்திராஷ்டம நாட்கள் சேர்க்கப்பட்டன')));
 }
 function gotoDate(y,m,d){
   document.getElementById('pDate').value=y+"-"+String(m).padStart(2,'0')+"-"+String(d).padStart(2,'0');
@@ -3050,7 +3067,10 @@ function decorateProfiles(){
   cards.forEach((card,i)=>{
     if(card.querySelector('.today-you')) return;
     const pr=ps[i]; if(!pr) return;
-    try{ card.insertAdjacentHTML('beforeend', dailyCardHTML(pr)); }catch(e){}
+    const icsBtn='<button class="ics-day" style="margin-top:10px" onclick="addMemberChandraICS('+i+')">'+
+      '🗓️ '+T('சந்திராஷ்டம நாட்களை காலண்டரில் சேர்','Add chandrashtamam dates to calendar')+
+      '<span class="exp-pro">PRO</span></button>';
+    try{ card.insertAdjacentHTML('beforeend', dailyCardHTML(pr)+icsBtn); }catch(e){}
   });
 }
 function enhanceProfiles(){ relabelProfileButtons(); decorateProfiles(); }
