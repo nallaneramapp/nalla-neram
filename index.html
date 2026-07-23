@@ -103,6 +103,24 @@ body.nn-pro-view .hero-brandline,
 body.nn-pro-view #fLinkPricing,
 body.nn-pro-view #fLinkHowto,
 body.nn-pro-view #goProBtn{ display:none !important; }
+/* calendar export buttons */
+.cal-export{display:flex; gap:9px; flex-wrap:wrap; justify-content:center; margin:4px 0 12px;}
+.cal-exp-btn{font-size:.84rem; padding:8px 16px;}
+/* hidden container that holds the print-ready calendar */
+#calPrint{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #calPrint, #calPrint *{visibility:visible;}
+  #calPrint{display:block !important; position:absolute; left:0; top:0; width:100%; padding:0 8px;}
+  .cal-export, .calnav{display:none !important;}
+  #calPrint .cp-head{text-align:center; margin-bottom:10px;}
+  #calPrint .cp-head h2{color:#5c0d0d; font-family:'Noto Serif Tamil',serif; font-size:1.3rem;}
+  #calPrint .cp-head .cp-sub{font-size:.85rem; color:#6b5334;}
+  #calPrint .calgrid{display:grid; grid-template-columns:repeat(7,1fr); gap:3px;}
+  #calPrint .calcell{border:1px solid #caa; min-height:70px; padding:3px; font-size:.62rem; break-inside:avoid;}
+  #calPrint .daylist .row{border-bottom:1px solid #ddd; padding:4px 0; break-inside:avoid;}
+  @page{ margin:12mm; }
+}
 /* a slim welcome strip shown to members in place of the pitch */
 .member-hi{display:none; max-width:1280px; margin:0 auto 14px; padding:9px 16px; border-radius:12px;
   background:linear-gradient(135deg,rgba(31,125,67,.16),rgba(31,125,67,.06)); border:1px solid rgba(31,125,67,.4);
@@ -917,6 +935,10 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
             <label><span class="ta-only">இடம்</span><span class="en-only">Place</span><select id="sPlace" onchange="gRenderSpecial()"></select></label>
           </div>
           <div class="calnav"><button onclick="calShift(-1)">◀</button><b id="calTitle"></b><button onclick="calShift(1)">▶</button></div>
+          <div class="cal-export">
+            <button class="btn cal-exp-btn" onclick="printCalendar()">🖨️ <span class="ta-only">PDF பதிவிறக்கு</span><span class="en-only">Download PDF</span></button>
+            <button class="btn cal-exp-btn" onclick="exportICS()">🗓️ <span class="ta-only">காலண்டரில் சேர் (.ics)</span><span class="en-only">Add to Calendar (.ics)</span></button>
+          </div>
           <div class="calgrid" id="calGrid"></div>
           <p style="font-size:.76rem;color:var(--ink2);margin-top:6px"><span class="ta-only">தேதியை அழுத்தினால் அந்த நாளின் முழு பஞ்சாங்கம் காணலாம்</span><span class="en-only">Click any date to see its full panchangam</span></p>
           <h3 id="calListTitle"></h3>
@@ -1143,6 +1165,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
   </div>
 </div>
 
+<div id="calPrint"></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1656,6 +1679,87 @@ function renderTodayBanner(){
 let calY=new Date().getFullYear(), calM=new Date().getMonth(); // calM 0-based
 const MN_EN=["January","February","March","April","May","June","July","August","September","October","November","December"];
 function calShift(n){ calM+=n; if(calM<0){calM=11;calY--;} if(calM>11){calM=0;calY++;} renderSpecialDays(); }
+
+/* ============================================================
+   CALENDAR EXPORTS — PDF (print) + .ics (subscribe)
+   Festival calendar export is free (sharing = growth). The personalized layer
+   — each family member's chandrashtamam days — is added only for Pro members.
+   ============================================================ */
+const MN_EN2=["January","February","March","April","May","June","July","August","September","October","November","December"];
+function printCalendar(){
+  const cp=document.getElementById('calPrint'); if(!cp) return;
+  const l=curLang();
+  let place=''; try{ const s=document.getElementById('sPlace'); place=s?s.options[s.selectedIndex].textContent.replace('📍 ',''):''; }catch(e){}
+  const title=(document.getElementById('calTitle')||{}).textContent||'';
+  cp.innerHTML=
+    '<div class="cp-head"><h2>🪔 '+(l==='en'?'Nalla Neram — Festivals & Panchangam':'நல்ல நேரம் — சிறப்பு நாட்கள் & பஞ்சாங்கம்')+'</h2>'+
+    '<div class="cp-sub">'+title+' · 📍 '+place+'</div></div>'+
+    '<div class="calgrid">'+(document.getElementById('calGrid')||{}).innerHTML+'</div>'+
+    '<h3 style="color:#5c0d0d;margin:12px 0 4px">'+((document.getElementById('calListTitle')||{}).textContent||'')+'</h3>'+
+    '<div class="daylist">'+(document.getElementById('splOut')||{}).innerHTML+'</div>'+
+    '<div style="text-align:center;font-size:.7rem;color:#8a7250;margin-top:14px">'+
+      (l==='en'?'Thirukanitha method · nallaneram.app':'திருக்கணித முறை · nallaneram.app')+'</div>';
+  toast(l==='en'?'Opening print… choose "Save as PDF"':'அச்சு திறக்கிறது… "Save as PDF" தேர்வு செய்யவும்');
+  setTimeout(()=>window.print(), 250);
+}
+
+/* ---- .ics builder ---- */
+function icsEsc(s){ return String(s).replace(/[\\,;]/g,m=>'\\'+m).replace(/\n/g,'\\n'); }
+function icsDate(y,m,d){ return y+String(m).padStart(2,'0')+String(d).padStart(2,'0'); }           // all-day YYYYMMDD
+function icsStamp(jd,tz){ const dt=new Date((jd-2440587.5)*86400000);                                 // JD → UTC timestamp
+  const p=n=>String(n).padStart(2,'0');
+  return dt.getUTCFullYear()+p(dt.getUTCMonth()+1)+p(dt.getUTCDate())+'T'+p(dt.getUTCHours())+p(dt.getUTCMinutes())+'00Z'; }
+function exportICS(){
+  const l=curLang();
+  const pl=(typeof getPlace==='function')?getPlace('sPlace'):null;
+  const lat=pl?pl.lat:13.0827, lon=pl?pl.lon:80.2707, tz=pl?pl.tz:5.5;
+  let out=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Nalla Neram//Panchangam//EN','CALSCALE:GREGORIAN',
+           'X-WR-CALNAME:'+(l==='en'?'Nalla Neram — Festivals':'நல்ல நேரம் — சிறப்பு நாட்கள்')];
+  let n=0;
+  /* festivals for the currently shown month (all-day events) — free */
+  const ndays=new Date(calY,calM+1,0).getDate();
+  for(let d=1; d<=ndays; d++){
+    let ev; try{ ev=specialsFor(computePanchang(calY,calM+1,d,lat,lon,tz,true)); }catch(e){ ev=[]; }
+    if(!ev||!ev.length) continue;
+    const names=ev.map(e=>e.replace(/^[^\p{L}\p{N}]*\s*/u,'').split('(')[0].trim()).join(', ');
+    const next=new Date(calY,calM,d+1);
+    out.push('BEGIN:VEVENT','UID:nn-fest-'+calY+(calM+1)+d+'@nallaneram',
+      'DTSTART;VALUE=DATE:'+icsDate(calY,calM+1,d),
+      'DTEND;VALUE=DATE:'+icsDate(next.getFullYear(),next.getMonth()+1,next.getDate()),
+      'SUMMARY:🪔 '+icsEsc(names),'TRANSP:TRANSPARENT','END:VEVENT');
+    n++;
+  }
+  /* personalized: each family member's chandrashtamam windows for ~90 days — PRO */
+  let proAdded=0;
+  if(isPro() && typeof loadProfiles==='function'){
+    const ps=loadProfiles()||[];
+    const nowJD=julianDay(new Date().getFullYear(),new Date().getMonth()+1,new Date().getDate(),12-tz);
+    ps.forEach(pr=>{
+      try{
+        const [by,bm,bd]=pr.dv.split('-').map(Number),[bh,bmin]=pr.tv.split(':').map(Number);
+        const bjd=julianDay(by,bm,bd,bh+bmin/60-pr.tz);
+        const jNak=Math.floor(sidereal(moonLon(bjd),bjd)/(360/27));
+        const wins=(typeof nextNCAWindows==='function')?nextNCAWindows(jNak,nowJD,3):[];
+        wins.forEach((w,i)=>{ if(!w||w.start==null) return;
+          out.push('BEGIN:VEVENT','UID:nn-ca-'+icsEsc(pr.name)+'-'+i+'@nallaneram',
+            'DTSTART:'+icsStamp(w.start,tz),'DTEND:'+icsStamp(w.end,tz),
+            'SUMMARY:🌙 '+icsEsc((l==='en'?'Chandrashtamam — ':'சந்திராஷ்டமம் — ')+pr.name),
+            'DESCRIPTION:'+icsEsc(l==='en'?'Avoid important undertakings during this window.':'இந்நேரத்தில் முக்கிய காரியங்கள் தவிர்க்கவும்.'),
+            'END:VEVENT');
+          proAdded++;
+        });
+      }catch(e){}
+    });
+  }
+  out.push('END:VCALENDAR');
+  const blob=new Blob([out.join('\r\n')],{type:'text/calendar;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='nalla-neram.ics';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  let msg=(l==='en'?('Calendar downloaded — '+n+' festival days'):('காலண்டர் பதிவிறக்கம் — '+n+' சிறப்பு நாட்கள்'));
+  if(proAdded) msg+=(l==='en'?' + '+proAdded+' personal chandrashtamam':' + '+proAdded+' சந்திராஷ்டமம்');
+  else if(!isPro()) msg+=(l==='en'?' · (Pro adds your family’s chandrashtamam days)':' · (Pro-வில் குடும்ப சந்திராஷ்டமம் சேரும்)');
+  toast(msg);
+}
 function gotoDate(y,m,d){
   document.getElementById('pDate').value=y+"-"+String(m).padStart(2,'0')+"-"+String(d).padStart(2,'0');
   showTab(0); renderPanchang(); window.scrollTo({top:0,behavior:'smooth'});
