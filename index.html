@@ -92,6 +92,23 @@ h1,h2,h3,h4{font-family:'Noto Serif Tamil','Cormorant Garamond',serif; font-weig
 .nn-menu button:hover{background:var(--cream2);}
 .nn-menu button.nn-signout{color:var(--red); border-top:1px solid rgba(217,182,74,.4); margin-top:4px;}
 .nn-menu button.nn-signout:hover{background:var(--red-bg);}
+/* ===== Pro member view — hide all the sales/marketing chrome once subscribed ===== */
+body.nn-pro-view #features,
+body.nn-pro-view .player-wrap,
+body.nn-pro-view #chandrashtamam,
+body.nn-pro-view .pricing,
+body.nn-pro-view #voices,
+body.nn-pro-view .hero-cta,
+body.nn-pro-view .hero-brandline,
+body.nn-pro-view #fLinkPricing,
+body.nn-pro-view #fLinkHowto,
+body.nn-pro-view #goProBtn{ display:none !important; }
+/* a slim welcome strip shown to members in place of the pitch */
+.member-hi{display:none; max-width:1280px; margin:0 auto 14px; padding:9px 16px; border-radius:12px;
+  background:linear-gradient(135deg,rgba(31,125,67,.16),rgba(31,125,67,.06)); border:1px solid rgba(31,125,67,.4);
+  color:#d9f0e0; font-size:.86rem; align-items:center; gap:8px;}
+body.nn-pro-view .member-hi{display:flex;}
+.member-hi b{color:#fff;}
 
 /* ===== HERO ===== */
 .hero{position:relative; overflow:hidden; color:var(--cream); text-align:center;
@@ -636,6 +653,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
 <section class="hero">
 
   <div class="hero-brandline"><span class="ta-only">நல்ல நேரம் · திருக்கணித முறை</span><span class="en-only">Nalla Neram · Thirukanitha Method</span></div>
+  <div class="member-hi" id="memberHi"></div>
 
   <div class="hero-split">
 
@@ -1079,8 +1097,8 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
   <div class="fkolam">✦ ❋ ✼ ❋ ✦</div>
   <div class="flinks">
     <a onclick="enterApp(0)"><span class="ta-only">பஞ்சாங்கம்</span><span class="en-only">Panchangam</span></a>
-    <a onclick="document.getElementById('howto').scrollIntoView({behavior:'smooth'})"><span class="ta-only">குடும்ப திட்டம்</span><span class="en-only">Family Plan</span></a>
-    <a onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})"><span class="ta-only">விலை</span><span class="en-only">Pricing</span></a>
+    <a id="fLinkHowto" onclick="document.getElementById('howto').scrollIntoView({behavior:'smooth'})"><span class="ta-only">குடும்ப திட்டம்</span><span class="en-only">Family Plan</span></a>
+    <a id="fLinkPricing" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})"><span class="ta-only">விலை</span><span class="en-only">Pricing</span></a>
   </div>
   <div class="flinks" style="font-size:.78rem;opacity:.9">
     <a href="/legal.html#terms"><span class="ta-only">விதிமுறைகள்</span><span class="en-only">Terms of Service</span></a>
@@ -2961,6 +2979,14 @@ function refreshCurrent(){
 
 function applyProState(){
   const pro=isPro();
+  /* Pro members see the app, not the sales pitch — hide all marketing chrome. */
+  document.body.classList.toggle('nn-pro-view', pro);
+  const mh=document.getElementById('memberHi');
+  if(mh && pro){
+    let nm=''; try{ if(useServer()&&window.NN.nnSignedIn()){ const u=window.NN.nnUser(); nm=(u&&u.firstName)?', '+u.firstName:''; } }catch(e){}
+    mh.innerHTML='✦ <b>'+T('Pro உறுப்பினர்','Pro member')+nm+'</b> — '+
+      T('உங்கள் பஞ்சாங்கம் &amp; குடும்ப பலன் தயார். 🙏','your panchangam &amp; family plan are ready below. 🙏');
+  }
   const l3=document.getElementById('lb3'); if(l3) l3.textContent=pro?'✓':'PRO';
   const b=document.getElementById('goProBtn');
   if(b){ if(pro){ b.textContent='✦ '+T('Pro உறுப்பினர்','Pro Member'); b.classList.add('ispro'); b.onclick=()=>{}; }
