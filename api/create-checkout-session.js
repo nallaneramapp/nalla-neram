@@ -55,9 +55,11 @@ export default async function handler(req, res) {
       automatic_tax: { enabled: true },
       customer_update: { address: 'auto', name: 'auto' },
       allow_promotion_codes: true,
-      // Require the customer to accept your Terms at checkout (set the Terms URL
-      // in Stripe → Settings → Public details / Checkout). Legal record of consent.
-      consent_collection: { terms_of_service: 'required' },
+      // TEMP: disabled for sandbox testing — Stripe rejects consent_collection
+      // until a Terms of Service URL is set under Settings → Public details,
+      // which requires filling out full business profile info. RE-ENABLE this
+      // before real/live launch (needs a Terms URL set first — see README):
+      // consent_collection: { terms_of_service: 'required' },
       // The price is charged in the customer's local currency. Configure the
       // Stripe Price with multi-currency amounts that MATCH the site's NN_PRICES
       // table (charm .99 per currency) so advertised price === charged price.
