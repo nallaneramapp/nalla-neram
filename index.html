@@ -22,7 +22,8 @@ window.NN_CONFIG = {
   clerkPublishableKey: 'pk_test_d2VsY29tZS1vcmNhLTE3LmNsZXJrLmFjY291bnRzLmRldiQ',
   supabaseUrl:        'https://apiluaxnapbnynrkhrtj.supabase.co',
   supabaseAnonKey:    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaWx1YXhuYXBibnlucmtocnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NjEzMjgsImV4cCI6MjEwMDMzNzMyOH0.FUe8AUE6M1ZN_3CfnLdna_PzP9qnldH1BUwESn4UaT8',
-  modulePath:         '/lib/nn-account.js'
+  modulePath:         '/lib/nn-account.js',
+  icsEndpoint:        true   // set true after deploying api/ics.js — makes iPhone calendar downloads reliable
 };
 </script>
 <style>
@@ -1767,11 +1768,23 @@ function isAppleMobile(){
          (navigator.platform==='MacIntel' && (navigator.maxTouchPoints||0)>1);   // iPadOS reports as Mac
 }
 function icsDownload(ics,fname){
-  if(isAppleMobile()){
-    window.location.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);
-    return;
-  }
   const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+  if(isAppleMobile()){
+    /* Reliable path (needs api/ics.js deployed + NN_CONFIG.icsEndpoint:true):
+       POST the file to a server route that returns it with a Content-Disposition
+       header — iOS then opens the native "Add to Calendar" sheet dependably. */
+    if(window.NN_CONFIG && window.NN_CONFIG.icsEndpoint){
+      const f=document.createElement('form'); f.method='POST'; f.action='/api/ics'; f.acceptCharset='utf-8';
+      const a1=document.createElement('input'); a1.type='hidden'; a1.name='ics'; a1.value=ics; f.appendChild(a1);
+      const a2=document.createElement('input'); a2.type='hidden'; a2.name='name'; a2.value=fname; f.appendChild(a2);
+      document.body.appendChild(f); f.submit(); setTimeout(()=>f.remove(),1500); return;
+    }
+    /* Endpoint-free fallback: open the file in a NEW tab so the site stays put
+       (the old same-tab data-URI is what made it "disappear"). */
+    const url=URL.createObjectURL(blob); const w=window.open(url,'_blank');
+    if(!w) window.location.href=url;
+    setTimeout(()=>URL.revokeObjectURL(url),20000); return;
+  }
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname;
   document.body.appendChild(a); a.click(); setTimeout(()=>{document.body.removeChild(a); URL.revokeObjectURL(a.href);},100);
 }
@@ -3185,13 +3198,15 @@ function showTab(n,fromHash){
   if(n===0){
     setActiveNav(0);
     const el=document.getElementById('panchPanel');
-    if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+    if(el && !fromHash) el.scrollIntoView({behavior:'smooth',block:'start'});
     return;
   }
   for(let i=1;i<=3;i++){ const t=document.getElementById('tab'+i); if(t) t.classList.toggle('active',i===n); }
   setActiveNav(n);
   if(n===1) renderSpecialDays();          /* festivals — always free */
   if(n===3){ if(isPro()){ renderProfiles(); enhanceProfiles(); } }
+  /* scroll the app into view so the chosen tab is actually shown (crucial on mobile) */
+  if(!fromHash){ const a=document.getElementById('app'); if(a) setTimeout(()=>a.scrollIntoView({behavior:'smooth',block:'start'}),40); }
 }
 window.addEventListener('hashchange',()=>{ const m=location.hash.match(/^#tab([0-3])/); if(m) showTab(+m[1],true); });
 function enterApp(n){ showTab(n); if(n!==0){ const a=document.getElementById('app'); if(a) a.scrollIntoView({behavior:'smooth'}); } }
