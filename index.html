@@ -2420,12 +2420,48 @@ const NN_PRICES={
 const NN_FREE={CAD:'CA$0',USD:'$0',GBP:'£0',EUR:'€0',AUD:'A$0',NZD:'NZ$0',SGD:'S$0',INR:'₹0',AED:'AED 0',MYR:'RM0',LKR:'Rs 0',ZAR:'R0'};
 const CCY_BY_COUNTRY={CA:'CAD',US:'USD',GB:'GBP',AU:'AUD',NZ:'NZD',SG:'SGD',IN:'INR',AE:'AED',MY:'MYR',LK:'LKR',ZA:'ZAR',
   IE:'EUR',DE:'EUR',FR:'EUR',NL:'EUR',BE:'EUR',ES:'EUR',IT:'EUR',AT:'EUR',FI:'EUR',PT:'EUR',GR:'EUR',LU:'EUR'};
+/* Currency by TIMEZONE, not browser language. A Canadian whose browser is set to
+   "English (US)" is still in America/Toronto → CAD. This is far more reliable than
+   navigator.language (which reflects language, not location). */
+const TZ_CCY={
+  // Canada
+  'America/Toronto':'CAD','America/Montreal':'CAD','America/Vancouver':'CAD','America/Edmonton':'CAD',
+  'America/Winnipeg':'CAD','America/Halifax':'CAD','America/St_Johns':'CAD','America/Regina':'CAD',
+  'America/Moncton':'CAD','America/Glace_Bay':'CAD','America/Goose_Bay':'CAD','America/Blanc-Sablon':'CAD',
+  'America/Whitehorse':'CAD','America/Dawson':'CAD','America/Dawson_Creek':'CAD','America/Fort_Nelson':'CAD',
+  'America/Yellowknife':'CAD','America/Inuvik':'CAD','America/Iqaluit':'CAD','America/Rankin_Inlet':'CAD',
+  'America/Resolute':'CAD','America/Cambridge_Bay':'CAD','America/Atikokan':'CAD','America/Creston':'CAD',
+  'America/Nipigon':'CAD','America/Thunder_Bay':'CAD','America/Pangnirtung':'CAD',
+  // USA
+  'America/New_York':'USD','America/Chicago':'USD','America/Los_Angeles':'USD','America/Denver':'USD',
+  'America/Phoenix':'USD','America/Detroit':'USD','America/Anchorage':'USD','America/Adak':'USD','America/Boise':'USD',
+  'America/Indiana/Indianapolis':'USD','America/Kentucky/Louisville':'USD','America/Menominee':'USD',
+  'America/Sitka':'USD','America/Juneau':'USD','America/Nome':'USD','America/Metlakatla':'USD','Pacific/Honolulu':'USD',
+  // UK
+  'Europe/London':'GBP',
+  // Eurozone
+  'Europe/Dublin':'EUR','Europe/Paris':'EUR','Europe/Berlin':'EUR','Europe/Madrid':'EUR','Europe/Rome':'EUR',
+  'Europe/Amsterdam':'EUR','Europe/Brussels':'EUR','Europe/Vienna':'EUR','Europe/Lisbon':'EUR','Europe/Athens':'EUR',
+  'Europe/Helsinki':'EUR','Europe/Luxembourg':'EUR','Europe/Bratislava':'EUR','Europe/Ljubljana':'EUR',
+  'Europe/Tallinn':'EUR','Europe/Riga':'EUR','Europe/Vilnius':'EUR','Europe/Malta':'EUR','Europe/Nicosia':'EUR',
+  // Australia / NZ
+  'Australia/Sydney':'AUD','Australia/Melbourne':'AUD','Australia/Brisbane':'AUD','Australia/Perth':'AUD',
+  'Australia/Adelaide':'AUD','Australia/Hobart':'AUD','Australia/Darwin':'AUD','Australia/Canberra':'AUD',
+  'Pacific/Auckland':'NZD','Pacific/Chatham':'NZD',
+  // Asia / Middle East / Africa
+  'Asia/Singapore':'SGD','Asia/Kolkata':'INR','Asia/Calcutta':'INR','Asia/Dubai':'AED',
+  'Asia/Kuala_Lumpur':'MYR','Asia/Kuching':'MYR','Asia/Colombo':'LKR','Africa/Johannesburg':'ZAR'
+};
 function nnCurrency(){
-  let cc='';
-  try{ const loc=(Intl.DateTimeFormat().resolvedOptions().locale)||navigator.language||''; const m=loc.split('-'); cc=(m[m.length-1]||'').toUpperCase(); }catch(e){}
-  if(!/^[A-Z]{2}$/.test(cc)){ try{ cc=((navigator.language||'').split('-')[1]||'').toUpperCase(); }catch(e){} }
-  const ccy=CCY_BY_COUNTRY[cc];
-  return (ccy && NN_PRICES[ccy]) ? ccy : 'CAD';
+  /* 1. timezone → currency (reliable) */
+  try{ const tzn=Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const c=TZ_CCY[tzn]; if(c && NN_PRICES[c]) return c; }catch(e){}
+  /* 2. fallback: locale region */
+  try{ const loc=(Intl.DateTimeFormat().resolvedOptions().locale)||navigator.language||'';
+    const cc=(loc.split('-').pop()||'').toUpperCase();
+    const c=CCY_BY_COUNTRY[cc]; if(c && NN_PRICES[c]) return c; }catch(e){}
+  /* 3. default to the home currency */
+  return 'CAD';
 }
 function applyLocalPrice(){
   const l=curLang(), ccy=nnCurrency(), P=NN_PRICES[ccy]||NN_PRICES.CAD;
