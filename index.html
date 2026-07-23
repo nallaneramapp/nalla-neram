@@ -1767,20 +1767,20 @@ function isAppleMobile(){
   return /iP(hone|ad|od)/.test(navigator.userAgent) ||
          (navigator.platform==='MacIntel' && (navigator.maxTouchPoints||0)>1);   // iPadOS reports as Mac
 }
+function icsB64(str){ try{ return btoa(unescape(encodeURIComponent(str))); }catch(e){ return ''; } }
 function icsDownload(ics,fname){
   const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
   if(isAppleMobile()){
     /* Reliable path (needs api/ics.js deployed + NN_CONFIG.icsEndpoint:true):
-       POST the file to a server route that returns it with a Content-Disposition
-       header — iOS then opens the native "Add to Calendar" sheet dependably. */
+       GET a server route that returns the file with a Content-Disposition header.
+       Must be GET — iOS re-fetches with GET when you tap "Continue" on its
+       download prompt, which is why a POST-only route returned 405. */
     if(window.NN_CONFIG && window.NN_CONFIG.icsEndpoint){
-      const f=document.createElement('form'); f.method='POST'; f.action='/api/ics'; f.acceptCharset='utf-8';
-      const a1=document.createElement('input'); a1.type='hidden'; a1.name='ics'; a1.value=ics; f.appendChild(a1);
-      const a2=document.createElement('input'); a2.type='hidden'; a2.name='name'; a2.value=fname; f.appendChild(a2);
-      document.body.appendChild(f); f.submit(); setTimeout(()=>f.remove(),1500); return;
+      const c=icsB64(ics);
+      if(c){ const url='/api/ics?name='+encodeURIComponent(fname)+'&c='+encodeURIComponent(c);
+        if(url.length<7500){ window.location.href=url; return; } }   // else fall through (too large)
     }
-    /* Endpoint-free fallback: open the file in a NEW tab so the site stays put
-       (the old same-tab data-URI is what made it "disappear"). */
+    /* Endpoint-free fallback: open the file in a NEW tab so the site stays put. */
     const url=URL.createObjectURL(blob); const w=window.open(url,'_blank');
     if(!w) window.location.href=url;
     setTimeout(()=>URL.revokeObjectURL(url),20000); return;

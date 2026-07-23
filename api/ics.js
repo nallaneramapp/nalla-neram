@@ -1,25 +1,37 @@
-// POST /api/ics  — echoes an iCalendar file back with the right headers.
+// GET (or POST) /api/ics  — echoes an iCalendar file back with the right headers.
 //
-// Why this exists: iOS Safari won't reliably download a client-generated .ics
-// (it ignores the download attribute, and same-tab data: URIs "disappear").
-// The dependable fix is to hand the browser a real HTTP response with
-// Content-Type: text/calendar + Content-Disposition — iOS then opens the native
-// "Add to Calendar" sheet. This route is stateless: the browser sends the .ics
-// text it already built, and we just return it with the correct headers.
+// Why this exists: iOS Safari won't reliably download a client-generated .ics.
+// The dependable fix is a real HTTP response with Content-Type: text/calendar +
+// Content-Disposition — iOS then opens the native "Add to Calendar" sheet.
+//
+// IMPORTANT: it must answer GET. iOS shows a "download this calendar file?"
+// prompt and, when the user taps Continue, RE-FETCHES the URL with a GET. A
+// POST-only route returns 405 "Method not allowed" at that step. So the site
+// calls this as GET with the calendar text base64-encoded in the `c` query
+// param (and POST is kept as a fallback).
 //
 // The site calls this only when window.NN_CONFIG.icsEndpoint === true.
-// Deploy this file, then flip that flag in index.html.
 
 export default function handler(req, res) {
-  if (req.method !== 'POST') { res.status(405).send('Method not allowed'); return; }
+  let ics = '';
+  let name = 'nalla-neram.ics';
 
-  // Vercel parses application/x-www-form-urlencoded into req.body.
-  const ics = (req.body && req.body.ics) || '';
-  let name = (req.body && req.body.name) || 'nalla-neram.ics';
+  if (req.method === 'GET') {
+    const c = (req.query && req.query.c) || '';
+    if (req.query && req.query.name) name = req.query.name;
+    try { ics = Buffer.from(String(c), 'base64').toString('utf8'); } catch (e) { ics = ''; }
+  } else if (req.method === 'POST') {
+    ics = (req.body && req.body.ics) || '';
+    if (req.body && req.body.name) name = req.body.name;
+  } else {
+    res.status(405).send('Method not allowed');
+    return;
+  }
+
   name = String(name).replace(/[^a-zA-Z0-9._-]/g, '_');            // sanitize filename
   if (!/\.ics$/i.test(name)) name += '.ics';
 
-  // Basic sanity so this can't be abused to serve arbitrary content.
+  // Sanity: only serve real calendar payloads, capped in size.
   if (!ics.startsWith('BEGIN:VCALENDAR') || ics.length > 200000) {
     res.status(400).send('Invalid calendar');
     return;
