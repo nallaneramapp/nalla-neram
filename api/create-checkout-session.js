@@ -50,9 +50,11 @@ export default async function handler(req, res) {
         trial_period_days: 7,
         metadata: { clerk_user_id: userId },
       },
-      // Stripe Tax computes VAT/GST/sales tax at checkout. Enable Tax in the
-      // Stripe dashboard and set your origin address first (see README).
-      automatic_tax: { enabled: true },
+      // TEMP: disabled for sandbox testing — Stripe rejects automatic_tax until
+      // a valid head office address is set under Settings → Tax. RE-ENABLE this
+      // before real/live launch (needs a valid origin address set first — see
+      // README, and reinstate consent_collection above at the same time):
+      // automatic_tax: { enabled: true },
       customer_update: { address: 'auto', name: 'auto' },
       allow_promotion_codes: true,
       // TEMP: disabled for sandbox testing — Stripe rejects consent_collection
