@@ -77,6 +77,21 @@ h1,h2,h3,h4{font-family:'Noto Serif Tamil','Cormorant Garamond',serif; font-weig
   box-shadow:0 3px 14px rgba(201,162,39,.45); transition:transform .16s, box-shadow .16s; white-space:nowrap;}
 .gopro-btn:hover{transform:translateY(-1px); box-shadow:0 6px 20px rgba(201,162,39,.6);}
 .gopro-btn.ispro{background:linear-gradient(135deg,#1f7d43,#2e9c57); color:#fff; cursor:default;}
+/* account dropdown menu */
+.nn-acct{position:relative; display:inline-block;}
+.nn-acct #nnAuthBtn{white-space:nowrap;}
+.nn-menu{position:absolute; right:0; top:calc(100% + 8px); z-index:60; min-width:210px; display:none;
+  background:var(--paper); border:1px solid var(--gold-line); border-radius:12px; box-shadow:0 12px 34px rgba(54,7,7,.4); padding:8px; text-align:left;}
+.nn-menu.show{display:block;}
+.nn-menu-email{font-size:.78rem; color:var(--ink2); padding:4px 9px 2px; word-break:break-all;}
+.nn-menu-status{padding:2px 9px 8px; margin-bottom:6px; border-bottom:1px solid rgba(217,182,74,.4); font-size:.8rem;}
+.nn-menu-status .nn-pro{color:var(--green); font-weight:700;}
+.nn-menu-status .nn-free{color:var(--gold-deep); font-weight:700;}
+.nn-menu button{display:block; width:100%; text-align:left; background:transparent; border:none; color:var(--ink);
+  font-family:'Noto Sans Tamil',sans-serif; font-size:.86rem; padding:9px 10px; border-radius:8px; cursor:pointer;}
+.nn-menu button:hover{background:var(--cream2);}
+.nn-menu button.nn-signout{color:var(--red); border-top:1px solid rgba(217,182,74,.4); margin-top:4px;}
+.nn-menu button.nn-signout:hover{background:var(--red-bg);}
 
 /* ===== HERO ===== */
 .hero{position:relative; overflow:hidden; color:var(--cream); text-align:center;
@@ -597,7 +612,17 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
       <button class="tabbtn" id="tb3" onclick="showTab(3)"><span class="ta-only">👨‍👩‍👧‍👦 குடும்ப பலன்</span><span class="en-only">👨‍👩‍👧‍👦 Family Plan</span> <span class="lockbadge" id="lb3">PRO</span></button>
       <button class="tabbtn" id="tb2" onclick="showTab(2)"><span class="ta-only">🔯 ஜாதக ஆலோசனை</span><span class="en-only">🔯 Jathagam</span> <span class="badge-enq" id="lb2">✉</span></button>
       <button class="gopro-btn" id="goProBtn" onclick="openPaywall('all')">✦ Go Pro</button>
-      <button class="tabbtn" id="nnAuthBtn" style="display:none">Sign in</button>
+      <div class="nn-acct" id="nnAcct" style="display:none">
+        <button class="tabbtn" id="nnAuthBtn">Sign in</button>
+        <div class="nn-menu" id="nnMenu">
+          <div class="nn-menu-email" id="nnMenuEmail"></div>
+          <div class="nn-menu-status" id="nnMenuStatus"></div>
+          <button id="nnMenuManage">Manage account</button>
+          <button id="nnMenuBilling">Manage subscription</button>
+          <button id="nnMenuRefresh">Refresh status</button>
+          <button id="nnMenuSignout" class="nn-signout">Sign out</button>
+        </div>
+      </div>
       <div class="langtog">
         <button id="lgTa" class="on" onclick="setLang('ta')">தமிழ்</button>
         <button id="lgEn" onclick="setLang('en')">EN</button>
@@ -2566,18 +2591,34 @@ async function refreshAccountUI(){
   if(n===1) renderSpecialDays();
   if(n===3 && isPro()){ renderProfiles(); enhanceProfiles(); }
 }
-/* top-bar sign-in / account button (only visible when the backend is live) */
+/* top-bar sign-in / account dropdown (only visible when the backend is live) */
+function nnCloseMenu(){ const m=document.getElementById('nnMenu'); if(m) m.classList.remove('show'); }
 function renderAuthBtn(){
-  const b=document.getElementById('nnAuthBtn'); if(!b) return;
-  if(!useServer()){ b.style.display='none'; return; }
-  b.style.display='';
-  if(window.NN.nnSignedIn()){
-    const u=window.NN.nnUser();
-    b.textContent='👤 '+((u&&(u.firstName||u.primaryEmailAddress&&u.primaryEmailAddress.emailAddress))||T('கணக்கு','Account'));
-    b.onclick=()=>window.NN.nnManageAccount();
+  const wrap=document.getElementById('nnAcct'), b=document.getElementById('nnAuthBtn'), menu=document.getElementById('nnMenu');
+  if(!b||!wrap) return;
+  if(!useServer()){ wrap.style.display='none'; return; }
+  wrap.style.display='';
+  let signedIn=false, u=null;
+  try{ signedIn=window.NN.nnSignedIn(); u=signedIn?window.NN.nnUser():null; }catch(e){}
+  if(signedIn){
+    const email=(u&&u.primaryEmailAddress&&u.primaryEmailAddress.emailAddress)||'';
+    const name=(u&&u.firstName)||email||T('கணக்கு','Account');
+    b.textContent='👤 '+name+' ▾';
+    b.onclick=(e)=>{ e.stopPropagation(); menu.classList.toggle('show'); };
+    /* populate the menu (labels follow the language) */
+    document.getElementById('nnMenuEmail').textContent=email;
+    const pro=isPro();
+    document.getElementById('nnMenuStatus').innerHTML = pro
+      ? '<span class="nn-pro">✦ '+T('Pro உறுப்பினர்','Pro Member')+'</span>'
+      : '<span class="nn-free">'+T('இலவச திட்டம்','Free plan')+'</span>';
+    const mgr=document.getElementById('nnMenuManage'); mgr.textContent='⚙ '+T('கணக்கை நிர்வகி','Manage account'); mgr.onclick=()=>{ nnCloseMenu(); window.NN.nnManageAccount(); };
+    const bill=document.getElementById('nnMenuBilling'); bill.textContent='💳 '+T('சந்தாவை நிர்வகி','Manage subscription'); bill.style.display=pro?'':'none'; bill.onclick=()=>{ nnCloseMenu(); window.NN.nnOpenBillingPortal(); };
+    const ref=document.getElementById('nnMenuRefresh'); ref.textContent='🔄 '+T('நிலையைப் புதுப்பி','Refresh status'); ref.onclick=()=>{ nnCloseMenu(); refreshAccountUI(); toast(T('புதுப்பிக்கப்பட்டது','Refreshed')); };
+    const out=document.getElementById('nnMenuSignout'); out.textContent='↪ '+T('வெளியேறு','Sign out'); out.onclick=()=>{ nnCloseMenu(); window.NN.nnSignOut(); };
   } else {
     b.textContent=T('உள்நுழை','Sign in');
     b.onclick=()=>window.NN.nnSignIn();
+    nnCloseMenu();
   }
 }
 function nnRequireSignIn(){
@@ -2999,9 +3040,12 @@ function init(){
   renderHeroLive();
   watchChandra();
   playerRender();
-  /* close any open ⓘ popover when clicking elsewhere */
-  document.addEventListener('click',e=>{ if(!e.target.closest('.ty-tok, .ty-head'))
-    document.querySelectorAll('.i-pop.show').forEach(p=>p.classList.remove('show')); });
+  /* close any open ⓘ popover or the account menu when clicking elsewhere */
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('.ty-tok, .ty-head'))
+      document.querySelectorAll('.i-pop.show').forEach(p=>p.classList.remove('show'));
+    if(!e.target.closest('#nnAcct')) nnCloseMenu();
+  });
   /* autoplay the walkthrough once it scrolls into view */
   try{
     const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ playerPlay(); io.disconnect(); } }),{threshold:.35});
@@ -3010,10 +3054,18 @@ function init(){
   const hm=location.hash.match(/^#tab([0-3])/); if(hm) showTab(+hm[1],true);
   renderAuthBtn();
   nnBoot();                                 // loads Clerk/Supabase only if enabled
-  /* returning from Stripe checkout → clean the URL and refresh Pro state */
+  /* returning from Stripe checkout → the webhook may take a few seconds to write
+     the subscription, so poll Pro status a handful of times until it flips. */
   if(/[?&]checkout=success/.test(location.search)){
-    toast(T('✦ Pro தொடங்கப்பட்டது!','✦ Welcome to Pro!'));
+    toast(T('✦ சந்தா உறுதிப்படுத்தப்படுகிறது…','✦ Confirming your subscription…'));
     try{ history.replaceState({},'',location.pathname); }catch(e){}
+    let tries=0;
+    const poll=setInterval(async()=>{
+      tries++;
+      if(useServer()) await refreshAccountUI();
+      if(isPro()){ clearInterval(poll); toast(T('✦ Pro-வுக்கு வரவேற்கிறோம்! 🙏','✦ Welcome to Pro! 🙏')); }
+      else if(tries>=6){ clearInterval(poll); }   // ~18s
+    }, 3000);
   }
 }
 if(typeof document!=='undefined') window.addEventListener('DOMContentLoaded',init);
