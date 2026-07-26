@@ -23,7 +23,7 @@ window.NN_CONFIG = {
   supabaseUrl:        'https://apiluaxnapbnynrkhrtj.supabase.co',
   supabaseAnonKey:    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaWx1YXhuYXBibnlucmtocnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NjEzMjgsImV4cCI6MjEwMDMzNzMyOH0.FUe8AUE6M1ZN_3CfnLdna_PzP9qnldH1BUwESn4UaT8',
   modulePath:         '/lib/nn-account.js',
-  icsEndpoint:        true   // set true after deploying api/ics.js — makes iPhone calendar downloads reliable
+  icsEndpoint:        false   // set true after deploying api/ics.js — makes iPhone calendar downloads reliable
 };
 </script>
 <style>
@@ -520,6 +520,8 @@ tr.brow td{background:var(--red-bg); color:#8f2323;}
 .ty-tara.ty-good{background:var(--green-bg); border-color:#a9d7ba;} .ty-tara.ty-good .ty-tara-h{color:var(--green);}
 .ty-tara.ty-warn{background:var(--amber-bg); border-color:#e2c777;} .ty-tara.ty-warn .ty-tara-h{color:var(--amber);}
 .ty-tara.ty-mid{background:#fbf3dd; border-color:var(--gold-line);} .ty-tara.ty-mid .ty-tara-h{color:var(--gold-deep);}
+.ty-work{margin-top:6px; padding-top:6px; border-top:1px dashed rgba(217,182,74,.5); font-size:.82rem; color:var(--ink2); line-height:1.5;}
+.ty-work b{color:var(--maroon);}
 .ty-head{display:flex; align-items:center; gap:7px; font-family:'Noto Serif Tamil',serif; color:var(--maroon); font-weight:700; font-size:.92rem; margin-bottom:9px; position:relative;}
 .ty-tokens{display:flex; flex-wrap:wrap; gap:8px;}
 .ty-tok{position:relative; display:flex; align-items:center; gap:7px; background:linear-gradient(135deg,var(--cream),var(--cream2));
@@ -3070,6 +3072,11 @@ const TARA_DESC_EN=[
  "A most favourable day. Considered excellent for important decisions, auspicious events and new beginnings."
 ];
 function iPop(txt){ return '<button class="i-btn" onclick="iTog(this)" aria-label="info">i</button><span class="i-pop">'+txt+'</span>'; }
+function _ageFrom(dv){
+  try{ const [y,m,d]=String(dv).split('-').map(Number); const t=new Date();
+    let a=t.getFullYear()-y; if((t.getMonth()+1)<m || ((t.getMonth()+1)===m && t.getDate()<d)) a--; return a; }
+  catch(e){ return 0; }
+}
 function dailyCardHTML(pr){
   const l=curLang(), {jRasi,jNak}=birthRasiOf(pr);
   const lord=RASI_LORD[jRasi], G=GRAHA[lord]||GRAHA["குரு"];
@@ -3085,9 +3092,19 @@ function dailyCardHTML(pr){
     const taraPop=l==='en'
       ? `Counted from your birth star to today's moon star, taken in nine — one of the nine <b>tara balams</b>. It changes each day, which is why your reading differs day to day.`
       : `உங்கள் ஜன்ம நட்சத்திரத்திலிருந்து இன்றைய சந்திர நட்சத்திரம் வரை எண்ணி, 9-ஆல் வகுத்த நிலை — 9 <b>தாராபலங்களில்</b> ஒன்று. இது தினமும் மாறும், அதனால்தான் பலனும் நாளுக்கு நாள் மாறுகிறது.`;
+    /* work/career line — adults (18+) only, framed as prudence not prediction */
+    let workLine='';
+    if(_ageFrom(pr.dv)>=18){
+      let wtxt;
+      if(tara===0||tcls==='ty-mid') wtxt=l==='en'?'a steady, ordinary day.':'வழக்கமான, சமநிலையான நாள்.';
+      else if(tcls==='ty-good')    wtxt=l==='en'?'a favourable day for tasks, meetings and new starts.':'பணிகள், சந்திப்புகள், புதிய தொடக்கங்களுக்கு உகந்த நாள்.';
+      else                         wtxt=l==='en'?'a measured day — hold major decisions or agreements; routine work is fine.':'முக்கிய முடிவுகள்/ஒப்பந்தங்களை நிதானமாக எடுங்கள்; வழக்கமான வேலைகள் நல்லது.';
+      workLine=`<div class="ty-work">🏢 <b>${T('வேலை','Work')}:</b> ${wtxt}</div>`;
+    }
     taraBlock=`<div class="ty-tara ${tcls}"><div class="ty-tara-h">${emo} ${T('தாராபலம்','Tara balam')}: `+
       `<b>${l==='en'?TARA_EN[tara]:TARA_NAME[tara]}</b> ${iPop(taraPop)}</div>`+
-      `<div class="ty-tara-d">${l==='en'?TARA_DESC_EN[tara]:TARA_DESC_TA[tara]}</div></div>`;
+      `<div class="ty-tara-d">${l==='en'?TARA_DESC_EN[tara]:TARA_DESC_TA[tara]}</div>`+
+      workLine+`</div>`;
   }catch(e){}
   const rasiTa=RASI[jRasi], rasiEn=RASI_EN[jRasi];
   const wd=LORD_WD[lord], wdName=l==='en'?WDAY_EN[wd]:WDAY[wd];
