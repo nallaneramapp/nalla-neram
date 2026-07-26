@@ -110,6 +110,14 @@ body.nn-pro-view #goProBtn{ display:none !important; }
 .exp-pro{font-size:.58rem; letter-spacing:.5px; background:rgba(243,217,139,.28); color:var(--gold-bright);
   border:1px solid var(--gold-line); border-radius:12px; padding:1px 6px; margin-left:6px; font-weight:700; vertical-align:middle;}
 body.nn-pro-view .exp-pro{display:none;}
+/* occasion ⓘ — tappable special-day badge + detail modal */
+.badspl.occ{cursor:pointer; transition:filter .14s;}
+.badspl.occ:hover{filter:brightness(1.06);}
+.occ-i{color:var(--maroon); font-weight:700; font-size:.9em; margin-left:1px;}
+.modal-body .occ-h{color:var(--maroon); font-family:'Noto Serif Tamil',serif; font-size:1.02rem; margin:14px 0 4px;}
+.modal-body .occ-h:first-child{margin-top:2px;}
+.modal-body .occ-p{font-size:.9rem; color:var(--ink); line-height:1.6; margin:0;}
+.occ-note{margin-top:14px; font-size:.76rem; color:var(--ink3); background:var(--cream2); border:1px solid rgba(217,182,74,.4); border-radius:10px; padding:9px 12px; line-height:1.5;}
 /* per-day "add to calendar" chip in the festival list */
 .ics-day{margin-top:5px; font-size:.68rem; background:var(--cream2); border:1px solid var(--gold-line);
   border-radius:14px; padding:2px 9px; cursor:pointer; color:var(--maroon); font-family:'Noto Sans Tamil',sans-serif; white-space:nowrap;}
@@ -1022,10 +1030,6 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
           <div class="controls" style="margin-top:12px">
             <label><span class="ta-only">📅 எதிர்கால பலன் இடம் (பயணத்திற்கு ஏற்ப)</span><span class="en-only">📅 Location for the future outlook (travel-friendly)</span><select id="fPlace"></select></label>
           </div>
-          <div style="margin-top:12px">
-            <button class="btn" onclick="openIcsRange('family')">🌙 <span class="ta-only">சந்திராஷ்டம நாட்களை காலண்டரில் சேர் (.ics)</span><span class="en-only">Add chandrashtamam dates to my calendar (.ics)</span><span class="exp-pro">PRO</span></button>
-            <p style="font-size:.74rem;color:var(--ink3);margin-top:5px"><span class="ta-only">குடும்பத்தில் ஒவ்வொருவரின் அடுத்த சந்திராஷ்டம நாட்கள் உங்கள் காலண்டரில் சேர்க்கப்படும் — நினைவூட்டலுடன்.</span><span class="en-only">Each family member's upcoming chandrashtamam days are added to your calendar — with a reminder.</span></p>
-          </div>
         </div>
         <div id="profOut"></div>
         <div id="futureOut"></div>
@@ -1158,6 +1162,24 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
 </footer>
 
 <!-- ===== PAYWALL ===== -->
+<!-- occasion detail (Pro): significance + how to worship -->
+<div class="modal-back" id="occModal">
+  <div class="modal" style="max-width:470px">
+    <button class="closex" onclick="closeOccasion()">✕</button>
+    <div class="modal-top"><div class="crown">🪔</div><h3 id="occTitle"></h3><div class="sub" id="occSub"></div></div>
+    <div class="modal-body" style="text-align:left">
+      <h4 class="occ-h" id="occAboutH"></h4>
+      <p class="occ-p" id="occAbout"></p>
+      <h4 class="occ-h" id="occWorshipH"></h4>
+      <p class="occ-p" id="occWorship"></p>
+      <h4 class="occ-h" id="occTemplesH" style="display:none"></h4>
+      <p class="occ-p" id="occTemples" style="display:none"></p>
+      <div class="occ-note" id="occNote"></div>
+      <div class="cta-row" style="margin-top:14px"><button class="later" onclick="closeOccasion()"><span class="ta-only">மூடு</span><span class="en-only">Close</span></button></div>
+    </div>
+  </div>
+</div>
+
 <!-- chandrashtamam calendar range chooser -->
 <div class="modal-back" id="icsRange">
   <div class="modal" style="max-width:380px">
@@ -1698,7 +1720,7 @@ function renderPanchang(){
   ${caRows.map(r=>`<tr class="brow"><td>${NAK[r.t]}</td><td><b>${NAK[r.a]}</b> நட்சத்திரக்காரர்கள்</td><td>${fmtJD(r.sp.start,p.tz)} → ${fmtJD(r.sp.end,p.tz)}</td></tr>`).join('')}
   </table>
   <div class="en" style="font-size:.78rem">ஜன்ம நட்சத்திரத்திலிருந்து 17-வது நட்சத்திரத்தை சந்திரன் கடக்கும் முழு காலம் (~1 நாள்) — இதுவே கூர்மையான சந்திராஷ்டம நேரம். பொதுவான (ராசி அடிப்படை) சந்திராஷ்டமம்: ${RASI[caR.rasi]} ராசி முழுவதற்கும் ~2½ நாள். Whole-star transit of the 17th star from janma natchathiram — the sharp window; the broader rasi-based window covers ${RASI_EN[caR.rasi]} for ~2.5 days.</div>`;
-  if(ev.length) h+=`<h3>🪔 இன்றைய சிறப்பு (Specials)</h3><div>${ev.map(e=>`<span class="badspl">${e}</span>`).join(' ')}</div>`;
+  if(ev.length) h+=`<h3>🪔 இன்றைய சிறப்பு (Specials)</h3><div>${ev.map(e=>occBadge(e)).join(' ')}</div>`;
   h+=`</div>`;
   document.getElementById('panchOut').innerHTML=h;
   renderTodayBanner();
@@ -1719,7 +1741,7 @@ function renderTodayBanner(){
     <div>${p.paksha} <b>${p.tithiName}</b> · <b>${NAK[p.ni]}</b> நட்சத்திரம்</div>
     <div style="font-size:.85rem;margin-top:4px">🟢 நல்ல நேரம் (பகல், ராகு/எமகண்டம் நீக்கியது): ${good}</div>
     <div style="font-size:.85rem">🌙 சந்திராஷ்டமம்: <b>${NAK[(p.ni+11)%27]}</b> நட்சத்திரக்காரர்களுக்கு ${(()=>{const sp=moonNakSpan(p.ni,p.jdSR);return sp?`(${fmtJD(sp.start,pl.tz)} → ${fmtJD(sp.end,pl.tz)})`:'';})()}</div>
-    <div style="margin-top:6px">${ev.length?ev.map(e=>`<span class="badspl">${e}</span>`).join(' '):'<span class="badgood">இன்று பொது நாள் — சிறப்பு விரதம்/பண்டிகை இல்லை</span>'}</div></div>`;
+    <div style="margin-top:6px">${ev.length?ev.map(e=>occBadge(e)).join(' '):'<span class="badgood">இன்று பொது நாள் — சிறப்பு விரதம்/பண்டிகை இல்லை</span>'}</div></div>`;
 }
 
 /* ============ Special days — calendar view ============ */
@@ -1882,6 +1904,143 @@ function addMemberChandraICS(i,mode){
               ((pr.name||'member').replace(/\s+/g,'-'))+'-chandrashtamam.ics');
   toast((l==='en'? (pr.name+' — '+count+' dates added') : (pr.name+' — '+count+' நாட்கள் சேர்க்கப்பட்டன')));
 }
+/* ============================================================
+   OCCASION LIBRARY — Pro members tap ⓘ on a special day to read its
+   significance and the traditional way to observe it. This is cultural /
+   devotional information; have a knowledgeable elder or priest review it.
+   Ordered specific-first (Vaikunta Ekadasi matches before generic Ekadasi).
+   ============================================================ */
+const NN_OCCASIONS=[
+ { key:'vaikunta', match:['Vaikunta','வைகுண்ட'],
+   en:{name:'Vaikunta Ekadasi', about:'The most sacred Ekadasi of the year, in the bright fortnight of Margazhi (Dec–Jan). Tradition holds that on this day the Vaikunta Dwaram, the gateway to the abode of Lord Vishnu, is opened, and those who worship pass through it toward liberation.', worship:'Devotees keep a day-long fast, stay awake in prayer, and at dawn pass through the Paramapada Vasal (the northern gate) at Vishnu temples. Chanting the Vishnu Sahasranamam and Tiruppavai is favoured. Fast only as your health allows.', temples:'Srirangam, where the Paramapada Vasal is opened for lakhs of devotees; Tirupati; and Perumal temples everywhere.'},
+   ta:{name:'வைகுண்ட ஏகாதசி', about:'ஆண்டின் மிகச் சிறப்பான ஏகாதசி — மார்கழி மாத வளர்பிறையில் வருகிறது. இந்நாளில் வைகுண்ட வாசல் (விஷ்ணுவின் உலக வாயில்) திறக்கப்படுவதாகவும், வழிபடுபவர் அதன் வழியே முக்திப் பாதை நோக்கிச் செல்வதாகவும் ஐதீகம்.', worship:'நாள் முழுவதும் விரதம், இரவு விழித்திருந்து பஜனை, விடியலில் கோயிலின் பரமபத வாசல் (வடக்கு வாயில்) வழியே செல்வர். விஷ்ணு சஹஸ்ரநாமம், திருப்பாவை ஓதுவது சிறப்பு. உடல்நலம் அனுமதிக்கும் வரையே விரதம்.', temples:'ஸ்ரீரங்கம் (பரமபத வாசல் திறக்கப்படும்), திருப்பதி, மற்றும் அனைத்து பெருமாள் கோயில்கள்.'} },
+ { key:'chitrapournami', match:['Chitra Pournami','சித்ரா பௌர்ணமி'],
+   en:{name:'Chitra Pournami', about:'The full moon of Chithirai, honouring Chitragupta, who keeps the record of every soul’s deeds. It is a day to reflect and seek the clearing of past faults.', worship:'Devotees light lamps, offer prayers to Chitragupta and Lakshmi, and many keep a fast, breaking it after seeing the full moon.', temples:'The Chitragupta temple in Kanchipuram; and Madurai during the Chithirai season.'},
+   ta:{name:'சித்ரா பௌர்ணமி', about:'சித்திரை மாத முழு நிலா நாள் — ஒவ்வொருவரின் செயல்களையும் பதிவு செய்யும் சித்திரகுப்தரை வழிபடும் நாள். கடந்த தவறுகள் நீங்க பிரார்த்திக்கும் நாள்.', worship:'விளக்கேற்றி, சித்திரகுப்தர் & லக்ஷ்மி வழிபாடு; பலர் விரதம் இருந்து முழு நிலாவைக் கண்ட பின் நிறைவு.', temples:'காஞ்சிபுரம் சித்திரகுப்தர் கோயில்; சித்திரை காலத்தில் மதுரை.'} },
+ { key:'panguniuthiram', match:['Panguni Uthiram','பங்குனி உத்திரம்'],
+   en:{name:'Panguni Uthiram', about:'The Uthiram star of Panguni under the full moon — a day of many celestial weddings: Shiva and Parvati, Murugan and Deivanai, Rama and Sita, Andal and Rangamannar.', worship:'Temples perform the divine kalyanam (wedding of the deities); devotees pray for harmony in marriage and family.', temples:'Madurai Meenakshi (the Meenakshi–Sundareswarar wedding) and Thiruparankundram Murugan temple.'},
+   ta:{name:'பங்குனி உத்திரம்', about:'பங்குனி மாத உத்திர நட்சத்திர பௌர்ணமி — பல தெய்வத் திருமணங்களின் நாள்: சிவன்–பார்வதி, முருகன்–தெய்வானை, ராமர்–சீதை, ஆண்டாள்–ரங்கமன்னார்.', worship:'கோயில்களில் தெய்வ கல்யாணம்; திருமண & குடும்ப இணக்கத்திற்குப் பிரார்த்தனை.', temples:'மதுரை மீனாட்சி (மீனாட்சி–சுந்தரேஸ்வரர் கல்யாணம்), திருப்பரங்குன்றம் முருகன் கோயில்.'} },
+ { key:'vaigasivisagam', match:['Vaigasi Visagam','வைகாசி விசாகம்'],
+   en:{name:'Vaigasi Visagam', about:'The Visakam star of Vaigasi, the birth star of Lord Murugan, celebrated with special worship of the lord of wisdom and valour.', worship:'Grand abhishekam and worship of Murugan; devotees pray for knowledge, courage and clarity.', temples:'Thiruttani and the Arupadai Veedu Murugan temples.'},
+   ta:{name:'வைகாசி விசாகம்', about:'வைகாசி மாத விசாக நட்சத்திரம் — முருகப் பெருமானின் அவதார நட்சத்திரம்; ஞானம், வீரம் ஆகியவற்றின் நாயகனை வழிபடும் நாள்.', worship:'முருகனுக்கு சிறப்பு அபிஷேகம், வழிபாடு; ஞானம், தைரியம், தெளிவுக்குப் பிரார்த்தனை.', temples:'திருத்தணி மற்றும் ஆறுபடை வீடு முருகன் கோயில்கள்.'} },
+ { key:'aadipooram', match:['Aadi Pooram','ஆடிப்பூரம்'],
+   en:{name:'Aadi Pooram', about:'The Pooram star of Aadi, celebrating Andal (Goddess Kodhai) and the Divine Mother — a day honouring feminine divinity.', worship:'Andal and Amman are worshipped; young girls are blessed, and the day marks Andal’s adoption and later union with the Lord.', temples:'Srivilliputhur (the Andal temple) and Amman temples such as Samayapuram.'},
+   ta:{name:'ஆடிப்பூரம்', about:'ஆடி மாத பூர நட்சத்திரம் — ஆண்டாள் (கோதை நாச்சியார்) & அம்பிகையை வழிபடும் நாள்; பெண் தெய்வீகத்தைப் போற்றும் நாள்.', worship:'ஆண்டாள் & அம்மன் வழிபாடு; சிறுமிகளுக்கு ஆசி; ஆண்டாள் திருவவதாரம் கொண்டாடப்படுகிறது.', temples:'ஸ்ரீவில்லிபுத்தூர் (ஆண்டாள் கோயில்), சமயபுரம் போன்ற அம்மன் கோயில்கள்.'} },
+ { key:'thaipoosam', match:['Thai Poosam','தைப்பூச'],
+   en:{name:'Thai Poosam', about:'Celebrated on the Poosam star of Thai, honouring Lord Murugan. Tradition holds that Goddess Parvati gave him the divine Vel (spear) on this day to vanquish evil.', worship:'Devotees carry kavadi and pots of milk (paal kudam) to Murugan temples as acts of devotion and thanksgiving, often after fasting and penance.', temples:'Palani, Thiruchendur and Swamimalai (of the Arupadai Veedu); and famously Batu Caves in Malaysia, where over a million gather.'},
+   ta:{name:'தைப்பூசம்', about:'தை மாத பூச நட்சத்திரத்தில் வரும் முருகப் பெருமான் திருநாள். இந்நாளில் பார்வதி தேவி முருகனுக்கு தீமையை அழிக்க தெய்வீக வேலை வழங்கியதாக ஐதீகம்.', worship:'பக்தர்கள் காவடி, பால்குடம் ஏந்தி முருகன் கோயில்களுக்குச் செல்வர் — விரதம், நோன்புக்குப் பின் நன்றிக் கடனாக.', temples:'பழனி, திருச்செந்தூர், சுவாமிமலை (ஆறுபடை வீடு); மலேசியா பத்து மலை (Batu Caves) — பத்து லட்சம் பேர் கூடும்.'} },
+ { key:'sankatahara', match:['Sankatahara','சங்கடஹர'],
+   en:{name:'Sankatahara Chaturthi', about:'The fourth lunar day after the full moon, dedicated to Lord Ganesha. Its name means the remover of sankata (troubles), observed to clear obstacles and sorrows.', worship:'Devotees worship Ganesha, offer modakam and durva grass, and many fast through the day, breaking it after sighting the moon in the evening.', temples:'Pillayarpatti Karpaga Vinayagar and your local Vinayagar temple.'},
+   ta:{name:'சங்கடஹர சதுர்த்தி', about:'பௌர்ணமிக்குப் பின் வரும் நான்காம் திதி — விநாயகருக்கு உகந்த நாள். "சங்கடம் (துன்பம்) நீக்கும்" நாள்; தடைகளையும் கவலைகளையும் நீக்க வழிபடுவர்.', worship:'விநாயகர் வழிபாடு, மோதகம் & அறுகம்புல் சமர்ப்பணம். பலர் பகல் விரதம் இருந்து மாலையில் சந்திரனைத் தரிசித்த பின் நிறைவு.', temples:'பிள்ளையார்பட்டி கற்பக விநாயகர் & உங்கள் ஊர் விநாயகர் கோயில்.'} },
+ { key:'vinayagar', match:['Vinayagar','விநாயகர்'],
+   en:{name:'Vinayagar Chaturthi', about:'The birthday of Lord Ganesha, in Aavani (Aug–Sep). As remover of obstacles and lord of beginnings, he is worshipped first before any undertaking.', worship:'A clay Ganesha is installed and worshipped with modakam, kozhukattai and durva grass; families pray at home and temple, and immerse the idol after the festival.', temples:'Pillayarpatti Karpaga Vinayagar and Ganesha temples everywhere.'},
+   ta:{name:'விநாயகர் சதுர்த்தி', about:'விநாயகப் பெருமானின் அவதார நாள் — ஆவணி மாதம். தடைகளை நீக்குபவர், தொடக்கங்களின் தலைவர்; எந்தக் காரியத்திற்கும் முதலில் வழிபடப்படுபவர்.', worship:'களிமண் விநாயகர் வைத்து மோதகம், கொழுக்கட்டை, அறுகம்புல்லுடன் வழிபாடு; வீட்டிலும் கோயிலிலும் பூஜை; பின் நிமஜ்ஜனம்.', temples:'பிள்ளையார்பட்டி கற்பக விநாயகர் & விநாயகர் கோயில்கள்.'} },
+ { key:'mattupongal', match:['Mattu Pongal','மாட்டுப் பொங்கல்'],
+   en:{name:'Mattu Pongal', about:'The day after Pongal, honouring cattle for their part in farming and daily life — a thanksgiving to the animals that sustain the family.', worship:'Cattle are bathed, their horns painted, garlanded and worshipped; families feed and thank them.', temples:'A village and home celebration.'},
+   ta:{name:'மாட்டுப் பொங்கல்', about:'பொங்கலுக்கு அடுத்த நாள் — உழவிலும் வாழ்விலும் உதவும் கால்நடைகளுக்கு நன்றி செலுத்தும் நாள்.', worship:'மாடுகளை குளிப்பாட்டி, கொம்பு அலங்கரித்து, மாலையிட்டு வழிபடுவர்; உணவளித்து நன்றி கூறுவர்.', temples:'கிராம & வீட்டுக் கொண்டாட்டம்.'} },
+ { key:'pongal', match:['Thai Pongal','தைப்பொங்கல்'],
+   en:{name:'Thai Pongal', about:'The Tamil harvest thanksgiving on the first of Thai, offering the first rice of the season to the Sun.', worship:'Pongal rice is cooked in a new pot until it boils over — a sign of abundance — and offered to Surya with turmeric, sugarcane and prayers.', temples:'Home-centred; the Suryanar Kovil near Kumbakonam (the Sun temple) is special.'},
+   ta:{name:'தைப்பொங்கல்', about:'தை முதல் நாள் தமிழர் அறுவடைத் திருநாள் — புதிய அறுவடை அரிசியை சூரியனுக்கு படைக்கும் நன்றி நாள்.', worship:'புதுப் பானையில் பொங்கல் பொங்கி (செழிப்பின் அடையாளம்), மஞ்சள், கரும்புடன் சூரியனுக்கு படைத்து வழிபடுவர்.', temples:'வீட்டு விழா; கும்பகோணம் அருகே சூரியனார் கோயில் சிறப்பு.'} },
+ { key:'tamilnewyear', match:['Tamil New Year','புத்தாண்டு'],
+   en:{name:'Tamil New Year (Puthandu)', about:'Chithirai 1, the first day of the Tamil year, welcomed with the kanni (an auspicious first sight of gold, fruit and a mirror) and the reading of the new panchangam.', worship:'Families begin with prayer and the panchanga sravanam (the year’s forecast), and share a festive meal of the six tastes.', temples:'Madurai during the Chithirai festival; temples everywhere hold new-year worship.'},
+   ta:{name:'தமிழ் புத்தாண்டு', about:'சித்திரை 1 — தமிழ் ஆண்டின் முதல் நாள்; கண்ணி (தங்கம், பழம், கண்ணாடி — நல்ல முதல் பார்வை) கண்டு, புதிய பஞ்சாங்கம் படித்து வரவேற்கப்படுகிறது.', worship:'வழிபாட்டுடன் தொடங்கி, பஞ்சாங்க சிரவணம் (ஆண்டு பலன்), ஆறு சுவை விருந்து.', temples:'சித்திரை விழாவில் மதுரை; எல்லா கோயில்களிலும் புத்தாண்டு வழிபாடு.'} },
+ { key:'aadiperukku', match:['Aadi Perukku','ஆடிப் பெருக்கு'],
+   en:{name:'Aadi Perukku', about:'Observed on the 18th of Aadi, celebrating the swelling monsoon waters of the rivers that bring life to the land.', worship:'People gather on river banks — especially the Cauvery — to give thanks to the water, float lamps and share food.', temples:'River banks, notably the Cauvery at Trichy, Thanjavur and Kumbakonam.'},
+   ta:{name:'ஆடிப் பெருக்கு', about:'ஆடி 18-ல் அனுசரிக்கப்படும் — நிலத்திற்கு உயிரூட்டும் ஆற்றுப் பெருக்கைக் கொண்டாடும் நாள்.', worship:'ஆற்றங்கரைகளில் (சிறப்பாக காவிரி) கூடி, நீருக்கு நன்றி செலுத்தி, விளக்கு விட்டு, உணவு பகிர்வர்.', temples:'ஆற்றங்கரைகள் — திருச்சி, தஞ்சாவூர், கும்பகோணம் காவிரிக் கரை.'} },
+ { key:'karadaiyan', match:['Karadaiyan','காரடையான்'],
+   en:{name:'Karadaiyan Nombu', about:'A vratam kept by women at the exact moment the Tamil month turns from Maasi to Panguni, recalling Savitri, who won back the life of her husband from Yama.', worship:'Women offer karadai (a rice cake) with butter and tie the saradu (yellow thread), praying for the long life of their husbands.', temples:'Observed at home; also at Amman temples.'},
+   ta:{name:'காரடையான் நோன்பு', about:'மாசி–பங்குனி மாதம் மாறும் சரியான நேரத்தில் பெண்கள் அனுசரிக்கும் நோன்பு — யமனிடமிருந்து கணவனை மீட்ட சாவித்திரியை நினைவுகூர்வது.', worship:'பெண்கள் காரடை (அரிசி அடை) வெண்ணெயுடன் படைத்து, சரடு (மஞ்சள் நூல்) கட்டி, கணவனின் நீண்ட ஆயுளுக்குப் பிரார்த்திப்பர்.', temples:'வீட்டில்; அம்மன் கோயில்களிலும்.'} },
+ { key:'aavaniavittam', match:['Avani Avittam','Upakarma','ஆவணி அவிட்டம்','உபாகர்மா'],
+   en:{name:'Avani Avittam (Upakarma)', about:'The day the sacred thread (poonool) is renewed, with a vow to resume Vedic study for the year.', worship:'After prayers, the old thread is replaced with a new one, traditionally by a river or the sea.', temples:'Rameswaram and coastal or river sites.'},
+   ta:{name:'ஆவணி அவிட்டம் (உபாகர்மா)', about:'புனூல் (பூணூல்) புதுப்பிக்கப்படும் நாள் — ஆண்டு முழுவதும் வேத அத்யயனத்தை மீண்டும் தொடங்கும் சங்கல்பம்.', worship:'வழிபாட்டிற்குப் பின் பழைய நூல் நீக்கி புதிய நூல் அணிவர் — பொதுவாக ஆறு/கடற்கரையில்.', temples:'ராமேஸ்வரம் & கடற்கரை/ஆற்றங்கரைத் தலங்கள்.'} },
+ { key:'navaratri', match:['Navaratri','நவராத்திரி'],
+   en:{name:'Navaratri', about:'The nine nights honouring the Divine Mother in her forms — Durga, Lakshmi and Saraswathi — the victory of good over evil.', worship:'Homes set up the golu (a display of dolls), women exchange gifts and sundal, and each set of three nights honours a different aspect of the Goddess.', temples:'Devi temples — Kanchi Kamakshi, Madurai Meenakshi, Melmaruvathur and Samayapuram.'},
+   ta:{name:'நவராத்திரி', about:'அம்பிகையை துர்கை, லக்ஷ்மி, சரஸ்வதி வடிவங்களில் வழிபடும் ஒன்பது இரவுகள் — தீமையின் மேல் நன்மையின் வெற்றி.', worship:'வீடுகளில் கொலு; பெண்கள் வெற்றிலை–சுண்டல் பரிமாற்றம்; மூன்று மூன்று இரவுகளாக மூன்று தேவியரை வழிபடுதல்.', temples:'தேவி தலங்கள் — காஞ்சி காமாட்சி, மதுரை மீனாட்சி, மேல்மருவத்தூர், சமயபுரம்.'} },
+ { key:'saraswathi', match:['Saraswathi','Ayudha','சரஸ்வதி','ஆயுத'],
+   en:{name:'Saraswathi & Ayudha Puja', about:'On the ninth night of Navaratri, knowledge and one’s tools of work are honoured before Goddess Saraswathi.', worship:'Books, instruments, vehicles and tools are placed before the Goddess and worshipped; work is rested for the day.', temples:'The Saraswathi temple at Koothanur; and Devi temples.'},
+   ta:{name:'சரஸ்வதி & ஆயுத பூஜை', about:'நவராத்திரியின் ஒன்பதாம் இரவு — சரஸ்வதி தேவியின் முன் கல்வியையும் தொழில் கருவிகளையும் வழிபடும் நாள்.', worship:'புத்தகங்கள், கருவிகள், வாகனங்கள் தேவி முன் வைத்து வழிபடப்படும்; அன்று வேலை ஓய்வு.', temples:'கூத்தனூர் சரஸ்வதி கோயில்; தேவி தலங்கள்.'} },
+ { key:'vijayadasami', match:['Vijayadasami','விஜயதசமி'],
+   en:{name:'Vijayadasami', about:'The tenth, victorious day — the triumph of good over evil and the most auspicious day to begin learning (Vidyarambham).', worship:'Children are started on their first letters; new studies and ventures begin; tools taken up in the Ayudha Puja are resumed.', temples:'Koothanur Saraswathi temple and Devi temples for Vidyarambham.'},
+   ta:{name:'விஜயதசமி', about:'பத்தாம் வெற்றி நாள் — தீமையின் மேல் நன்மையின் வெற்றி; கல்வி தொடங்க (வித்யாரம்பம்) மிக உகந்த நாள்.', worship:'குழந்தைகளுக்கு எழுத்தறிவித்தல்; புதிய படிப்பு/முயற்சி தொடக்கம்; ஆயுத பூஜைக் கருவிகள் மீண்டும் எடுத்தல்.', temples:'கூத்தனூர் சரஸ்வதி கோயில் & தேவி தலங்கள்.'} },
+ { key:'krishnajayanthi', match:['Krishna Jayanthi','Gokulashtami','கிருஷ்ண ஜெயந்தி'],
+   en:{name:'Krishna Jayanthi (Gokulashtami)', about:'The birth of Lord Krishna, at midnight on Ashtami in Aavani.', worship:'Homes draw little footprints of the child Krishna leading to the puja room, prepare his favourite butter and seedai, and worship at midnight.', temples:'Guruvayur (Kerala) and Udupi Krishna temples; and Krishna/Perumal temples.'},
+   ta:{name:'கிருஷ்ண ஜெயந்தி (கோகுலாஷ்டமி)', about:'ஆவணி மாத அஷ்டமி நள்ளிரவில் கிருஷ்ணப் பெருமான் அவதரித்த நாள்.', worship:'வீட்டில் குழந்தை கிருஷ்ணனின் சிறு பாதங்கள் வரைந்து, வெண்ணெய், சீடை படைத்து, நள்ளிரவில் வழிபாடு.', temples:'குருவாயூர் (கேரளா), உடுப்பி கிருஷ்ணன் கோயில்கள்; கிருஷ்ணன்/பெருமாள் கோயில்கள்.'} },
+ { key:'ramanavami', match:['Rama Navami','ஸ்ரீராம','ராம நவமி'],
+   en:{name:'Sri Rama Navami', about:'The birth of Lord Rama, the ideal of dharma, on Navami in Chithirai.', worship:'Rama is worshipped with recitation of the Ramayana and bhajans; panakam (a jaggery drink) is offered in the summer heat.', temples:'Rameswaram, Bhadrachalam and Rama/Perumal temples.'},
+   ta:{name:'ஸ்ரீராம நவமி', about:'சித்திரை மாத நவமியில் தர்மத்தின் வடிவமான ராமபிரான் அவதரித்த நாள்.', worship:'ராமாயண பாராயணம், பஜனையுடன் ராமர் வழிபாடு; கோடை வெப்பத்தில் பானகம் படைத்தல்.', temples:'ராமேஸ்வரம், பத்ராசலம், ராமர்/பெருமாள் கோயில்கள்.'} },
+ { key:'akshaya', match:['Akshaya','அட்சய'],
+   en:{name:'Akshaya Tritiyai', about:'An imperishable day, when whatever good is begun or given is believed to grow and never diminish.', worship:'A favoured day for new beginnings, charity and (by custom) buying gold; Lakshmi and Vishnu are worshipped.', temples:'Lakshmi and Perumal temples.'},
+   ta:{name:'அட்சய திருதியை', about:'அழியாத (அட்சய) நாள் — இந்நாளில் தொடங்கும் நன்மையும் தானமும் வளர்ந்து குறையாது என்பது ஐதீகம்.', worship:'புதிய தொடக்கம், தானம், (வழக்கப்படி) தங்கம் வாங்குதல்; லக்ஷ்மி & விஷ்ணு வழிபாடு.', temples:'லக்ஷ்மி & பெருமாள் கோயில்கள்.'} },
+ { key:'varalakshmi', match:['Varalakshmi','வரலட்சுமி'],
+   en:{name:'Varalakshmi Viratham', about:'A Friday vratam in Aavani when married women worship Goddess Lakshmi for the wellbeing and prosperity of the family.', worship:'Women decorate a kalasam as the Goddess, offer prayers and tie the sacred thread; a day of family prosperity.', temples:'Ashtalakshmi temple (Chennai) and Lakshmi temples; largely observed at home.'},
+   ta:{name:'வரலட்சுமி விரதம்', about:'ஆவணி மாத வெள்ளிக்கிழமை — குடும்ப நலனுக்காகவும் செழிப்புக்காகவும் மணமான பெண்கள் லக்ஷ்மி தேவியை வழிபடும் விரதம்.', worship:'கலசத்தை தேவியாக அலங்கரித்து வழிபாடு, சரடு கட்டுதல்; குடும்ப செழிப்பின் நாள்.', temples:'அஷ்டலக்ஷ்மி கோயில் (சென்னை) & லக்ஷ்மி கோயில்கள்; பெரும்பாலும் வீட்டில்.'} },
+ { key:'margazhi', match:['மார்கழி பஜனை','Thiruppavai','திருப்பாவை'],
+   en:{name:'Margazhi (Thiruppavai season)', about:'The dawn-devotional month of Margazhi, when Andal’s Thiruppavai and Manickavasagar’s Thiruvempavai are sung before sunrise; the whole month is held sacred.', worship:'Devotees rise before dawn for bhajans and temple singing, and draw large kolams at their doorsteps.', temples:'Srivilliputhur (Andal), Srirangam, and Shiva and Perumal temples.'},
+   ta:{name:'மார்கழி (திருப்பாவை காலம்)', about:'விடியல் பக்தி மாதமான மார்கழி — ஆண்டாளின் திருப்பாவையும் மாணிக்கவாசகரின் திருவெம்பாவையும் விடியலுக்கு முன் பாடப்படும்; மாதம் முழுவதும் புனிதம்.', worship:'விடியலுக்கு முன் எழுந்து பஜனை, கோயில் பாராயணம்; வாசலில் பெரிய கோலம்.', temples:'ஸ்ரீவில்லிபுத்தூர் (ஆண்டாள்), ஸ்ரீரங்கம், சிவ & பெருமாள் கோயில்கள்.'} },
+ { key:'aadivelli', match:['Aadi Velli','ஆடி வெள்ளி'],
+   en:{name:'Aadi Velli', about:'The Fridays of the month of Aadi, held especially sacred to the Divine Mother (Amman / Lakshmi). Aadi is the month of the Goddess, and its Fridays draw large crowds to Amman temples.', worship:'Devotees visit Amman temples, offer koozh (a savoury porridge), light lamps, and pray for the family’s wellbeing and prosperity.', temples:'Amman temples such as Samayapuram, Melmaruvathur, and Ashtalakshmi (Chennai).'},
+   ta:{name:'ஆடி வெள்ளி', about:'ஆடி மாத வெள்ளிக்கிழமைகள் — அம்பிகைக்கு (அம்மன்/லக்ஷ்மி) மிகச் சிறப்பானவை. ஆடி அம்மனின் மாதம்; இந்த வெள்ளிகளில் அம்மன் கோயில்களில் பெருங்கூட்டம்.', worship:'அம்மன் கோயில் தரிசனம், கூழ் படைத்தல், விளக்கேற்றல்; குடும்ப நலனுக்கும் செழிப்புக்கும் பிரார்த்தனை.', temples:'சமயபுரம், மேல்மருவத்தூர், அஷ்டலக்ஷ்மி (சென்னை) போன்ற அம்மன் கோயில்கள்.'} },
+ { key:'aadichevvai', match:['Aadi Chevvai','ஆடி செவ்வாய்'],
+   en:{name:'Aadi Chevvai', about:'The Tuesdays of Aadi, sacred to the Divine Mother in her fierce, protective forms (Mariamman, Angalamman). Tuesday is the Goddess’s day, and in Aadi it is especially observed.', worship:'Devotees visit Amman temples, offer koozh and neem, and pray for health and protection from illness.', temples:'Mariamman temples such as Samayapuram and Punnainallur; Angalamman temples.'},
+   ta:{name:'ஆடி செவ்வாய்', about:'ஆடி மாத செவ்வாய்க்கிழமைகள் — அம்பிகையின் காக்கும் உக்கிர வடிவங்களுக்கு (மாரியம்மன், அங்காளம்மன்) உகந்தவை. செவ்வாய் அம்மனின் நாள்; ஆடியில் சிறப்பு.', worship:'அம்மன் கோயில் தரிசனம், கூழ் & வேப்பிலை படைத்தல்; ஆரோக்கியத்திற்கும் நோய் நீக்கத்திற்கும் பிரார்த்தனை.', temples:'சமயபுரம், புன்னைநல்லூர் மாரியம்மன்; அங்காளம்மன் கோயில்கள்.'} },
+ { key:'thaivelli', match:['Thai Velli','தை வெள்ளி'],
+   en:{name:'Thai Velli', about:'The Fridays of the month of Thai, an auspicious time to worship the Divine Mother (Lakshmi / Amman) for prosperity in the new harvest season.', worship:'Devotees light lamps at dusk, visit Amman and Lakshmi temples, and pray for wellbeing and abundance.', temples:'Lakshmi and Amman temples.'},
+   ta:{name:'தை வெள்ளி', about:'தை மாத வெள்ளிக்கிழமைகள் — புதிய அறுவடைக் காலத்தில் செழிப்புக்காக அம்பிகையை (லக்ஷ்மி/அம்மன்) வழிபடும் மங்கல நாட்கள்.', worship:'மாலையில் விளக்கேற்றல், அம்மன்/லக்ஷ்மி கோயில் தரிசனம்; நலனுக்கும் செழிப்புக்கும் பிரார்த்தனை.', temples:'லக்ஷ்மி & அம்மன் கோயில்கள்.'} },
+ { key:'purattasisani', match:['Purattasi Sani','புரட்டாசி சனி'],
+   en:{name:'Purattasi Sani', about:'The Saturdays of Purattasi, the month sacred to Lord Vishnu (Venkateswara / Perumal). Saturday is his special day, and Purattasi Saturdays are observed with fasting and devotion.', worship:'Many keep a partial fast (avoiding non-vegetarian food for the month), visit Perumal temples, and offer prayers to Venkateswara. Fast as your health allows.', temples:'Tirupati (Venkateswara) and Perumal temples everywhere.'},
+   ta:{name:'புரட்டாசி சனி', about:'புரட்டாசி மாத சனிக்கிழமைகள் — விஷ்ணுவுக்கு (வெங்கடேஸ்வரர்/பெருமாள்) உகந்த மாதம். சனி அவரது சிறப்பு நாள்; புரட்டாசி சனிகளில் விரதமும் பக்தியும்.', worship:'பலர் மாதம் முழுவதும் சைவ விரதம், பெருமாள் கோயில் தரிசனம், வெங்கடேஸ்வரர் வழிபாடு. உடல்நலம் அனுமதிக்கும் வரையே விரதம்.', temples:'திருப்பதி (வெங்கடேஸ்வரர்) & பெருமாள் கோயில்கள்.'} },
+ { key:'ekadasi', match:['Ekadasi','ஏகாதசி'],
+   en:{name:'Ekadasi', about:'The eleventh lunar day, sacred to Lord Vishnu and observed twice each lunar month — a day of restraint, prayer and cleansing.', worship:'Many fast (traditionally abstaining from rice and grains), spend the day in Vishnu worship and chanting, and break the fast next morning on Dwadasi. Observe fasting only as your health permits.', temples:'Vishnu / Perumal temples.'},
+   ta:{name:'ஏகாதசி', about:'பதினொன்றாம் திதி — விஷ்ணுவுக்கு உகந்த நாள்; மாதம் இருமுறை. கட்டுப்பாடு, வழிபாடு, மனத் தூய்மைக்கான நாள்.', worship:'பலர் விரதம் (அரிசி/தானியம் தவிர்த்து), விஷ்ணு வழிபாடு, நாமஜபம்; மறுநாள் துவாதசியில் நிறைவு. உடல்நலம் அனுமதிக்கும் வரையே விரதம்.', temples:'பெருமாள் கோயில்கள்.'} },
+ { key:'pradosham', match:['Pradosham','பிரதோஷ'],
+   en:{name:'Pradosham', about:'The twilight window on the thirteenth lunar day (trayodashi), sacred to Lord Shiva. Tradition holds that at this hour Shiva danced the Ananda Thandava between the horns of Nandi and blessed the devas.', worship:'Devotees visit a Shiva temple in the evening — about 1.5 hours before sunset — light a lamp, and pray during the pradosha kalam; circumambulating Nandi and offering abhishekam are common. Light fasting until the evening puja, as health allows.', temples:'Any Shiva temple with a prominent Nandi; the pradosha kalam worship is the same everywhere.'},
+   ta:{name:'பிரதோஷம்', about:'திரயோதசி திதியில் வரும் மாலை நேரம் — சிவபெருமானுக்கு உகந்த நேரம். நந்தியின் கொம்புகளுக்கு இடையே சிவன் ஆனந்த தாண்டவம் ஆடி தேவர்களுக்கு அருள் புரிந்ததாக ஐதீகம்.', worship:'மாலையில் (அஸ்தமனத்திற்கு ~1½ மணி முன்) சிவன் கோயிலுக்குச் சென்று, விளக்கேற்றி, பிரதோஷ காலத்தில் வழிபடுவர்; நந்தி வலம், அபிஷேகம் சிறப்பு. உடல்நலம் அனுமதிக்கும் வரை லேசான விரதம்.', temples:'நந்தி சிறப்புடன் உள்ள சிவன் கோயில்கள்; பிரதோஷ கால வழிபாடு எங்கும் ஒன்றே.'} },
+ { key:'amavasai', match:['Amavasai','அமாவாசை'],
+   en:{name:'Amavasai', about:'The new-moon day, traditionally set aside to remember and honour ancestors (pitru). Aadi, Thai and Mahalaya Amavasai are especially significant.', worship:'Devotees perform tarpanam (water oblations) for ancestors, offer charity and food, and visit rivers or temples — a day of remembrance and gratitude.', temples:'River ghats and Rameswaram for tarpanam draw the largest gatherings.'},
+   ta:{name:'அமாவாசை', about:'புது நிலா நாள் — முன்னோர்களை (பித்ரு) நினைவுகூர்ந்து மரியாதை செலுத்தும் நாள். ஆடி, தை, மகாளய அமாவாசை மிகச் சிறப்பு.', worship:'முன்னோர்களுக்கு தர்ப்பணம், தானம், அன்னதானம்; ஆற்று நீராடல், கோயில் வழிபாடு — நினைவும் நன்றியும்.', temples:'தர்ப்பணத்திற்கு ஆற்றங்கரைகள், ராமேஸ்வரம்.'} },
+ { key:'pournami', match:['Pournami','பௌர்ணமி'],
+   en:{name:'Pournami', about:'The full-moon day, auspicious across traditions and especially linked to the Divine Mother and to Satyanarayana.', worship:'Devotees perform the Satyanarayana puja, worship the Goddess, light lamps and visit temples; many keep a fast and break it after seeing the full moon.', temples:'Thiruvannamalai girivalam (the full-moon circumambulation of the hill) is famous.'},
+   ta:{name:'பௌர்ணமி', about:'முழு நிலா நாள் — பல மரபுகளில் மங்கலகரமானது; சிறப்பாக அம்பிகைக்கும் சத்யநாராயணருக்கும் உகந்தது.', worship:'சத்யநாராயண பூஜை, அம்பிகை வழிபாடு, விளக்கேற்றல், கோயில் தரிசனம்; பலர் பகல் விரதம் இருந்து முழு நிலாவைக் கண்ட பின் நிறைவு.', temples:'திருவண்ணாமலை கிரிவலம் (பௌர்ணமி மலை வலம்) புகழ்பெற்றது.'} },
+ { key:'sashti', match:['Sashti','சஷ்டி'],
+   en:{name:'Sashti', about:'The sixth lunar day, dedicated to Lord Murugan. It recalls his victory over the demon Surapadman, observed for courage, protection and the clearing of obstacles.', worship:'Devotees worship Murugan, offer flowers and fruit, and many fast through the day; reciting the Kanda Sashti Kavasam is favoured. Fast as your health permits.', temples:'Murugan temples of the Arupadai Veedu; Thiruchendur for Kanda Sashti and the Soorasamharam.'},
+   ta:{name:'சஷ்டி', about:'ஆறாம் திதி — முருகப் பெருமானுக்கு உகந்த நாள். சூரபத்மனை வென்ற வெற்றியை நினைவுகூரும் நாள்; தைரியம், காப்பு, தடை நீக்கத்திற்கு.', worship:'முருகன் வழிபாடு, மலர்/பழ சமர்ப்பணம்; பலர் பகல் விரதம்; கந்த சஷ்டி கவசம் ஓதுவது சிறப்பு. உடல்நலம் அனுமதிக்கும் வரையே விரதம்.', temples:'ஆறுபடை வீடு முருகன் கோயில்கள்; கந்த சஷ்டி/சூரசம்ஹாரம் திருச்செந்தூரில் சிறப்பு.'} },
+ { key:'karthigai', match:['Krithigai','Karthigai','கார்த்திகை'],
+   en:{name:'Karthigai / Deepam', about:'The Krithigai nakshatra day, sacred to Lord Murugan and observed monthly. In the month of Karthigai it becomes Karthigai Deepam, the festival of lamps, marking the boundless light of Shiva.', worship:'Homes and temples are lit with rows of agal vilakku (clay lamps) at dusk; devotees worship Murugan and Shiva.', temples:'Thiruvannamalai (Arunachaleswarar) for the Maha Deepam beacon lit atop the hill; Murugan temples for the monthly Krithigai.'},
+   ta:{name:'கார்த்திகை / தீபம்', about:'கிருத்திகை நட்சத்திர நாள் — முருகனுக்கு உகந்தது; மாதந்தோறும். கார்த்திகை மாதத்தில் இது கார்த்திகை தீபமாக — சிவனின் எல்லையற்ற ஜோதியைக் குறிக்கும் விளக்குத் திருநாள்.', worship:'மாலையில் வீடுகளிலும் கோயில்களிலும் அகல் விளக்குகள் வரிசையாக ஏற்றப்படும்; முருகன்/சிவ வழிபாடு.', temples:'கார்த்திகை தீபத்திற்கு திருவண்ணாமலை (அருணாசலேஸ்வரர்) மலை மகாதீபம்; மாத கிருத்திகைக்கு முருகன் கோயில்கள்.'} },
+ { key:'shivaratri', match:['Shivaratri','சிவராத்திரி'],
+   en:{name:'Maha Shivaratri', about:'The great night of Lord Shiva, in the month of Maasi — kept as a vigil of prayer and inner awakening on the night Shiva performed the cosmic dance.', worship:'Devotees fast and stay awake through the night in four praharas of worship, offering abhishekam to the Shiva lingam with water, milk and bilva leaves, chanting Om Namah Shivaya. Fast as your health allows.', temples:'The great Shiva temples — Chidambaram, Thiruvannamalai, Srikalahasti and Kashi (Varanasi).'},
+   ta:{name:'மகா சிவராத்திரி', about:'சிவபெருமானின் மகா இரவு — மாசி மாதத்தில். சிவன் பேரண்ட நடனம் ஆடிய இரவாகக் கருதப்பட்டு, இரவு முழுவதும் விழித்திருந்து வழிபடும் ஜாகரண நாள்.', worship:'விரதம் இருந்து இரவு முழுவதும் விழித்து நான்கு காலங்களில் வழிபாடு; நீர், பால், வில்வத்தால் சிவலிங்க அபிஷேகம், "ஓம் நமசிவாய" ஜபம். உடல்நலம் அனுமதிக்கும் வரையே விரதம்.', temples:'பெரிய சிவ தலங்கள் — சிதம்பரம், திருவண்ணாமலை, ஸ்ரீகாளஹஸ்தி, காசி.'} },
+ { key:'deepavali', match:['Deepavali','தீபாவளி'],
+   en:{name:'Deepavali', about:'The festival of lights — the triumph of light over darkness and good over evil; in the south, recalling the defeat of Narakasura. A day of renewal, family and joy.', worship:'Families rise before dawn for an oil bath, wear new clothes, light lamps and share sweets; many offer prayers at home and temple.', temples:'Largely a home festival; temples hold special morning worship.'},
+   ta:{name:'தீபாவளி', about:'ஒளித் திருநாள் — இருளின் மேல் ஒளியும், தீமையின் மேல் நன்மையும் வெற்றி; தென்னகத்தில் நரகாசுரன் அழிந்த நாள். புத்துணர்வு, குடும்பம், மகிழ்ச்சியின் நாள்.', worship:'விடியலுக்கு முன் எண்ணெய் நீராடல், புத்தாடை, விளக்கேற்றல், இனிப்பு பகிர்தல்; வீட்டிலும் கோயிலிலும் வழிபாடு.', temples:'பெரும்பாலும் வீட்டுத் திருவிழா; கோயில்களில் காலை சிறப்பு வழிபாடு.'} }
+];
+const NN_OCC_BY_KEY={}; NN_OCCASIONS.forEach(o=>NN_OCC_BY_KEY[o.key]=o);
+function matchOcc(e){ for(const o of NN_OCCASIONS){ for(const m of o.match){ if(e.indexOf(m)>=0) return o.key; } } return null; }
+function occBadge(e){
+  const key=matchOcc(e);
+  if(!key) return '<span class="badspl">'+e+'</span>';
+  return '<span class="badspl occ" onclick="showOccasion(\''+key+'\')" title="'+T('விவரம்','Details')+'">'+e+' <span class="occ-i">ⓘ</span></span>';
+}
+function showOccasion(key){
+  if(!isPro()){ openPaywall('about'); return; }
+  const o=NN_OCC_BY_KEY[key]; if(!o) return;
+  const l=curLang(), c=(l==='en')?o.en:o.ta;
+  document.getElementById('occTitle').textContent='🪔 '+c.name;
+  document.getElementById('occSub').textContent=(l==='en')?'Significance & how to observe':'சிறப்பும் வழிபாட்டு முறையும்';
+  document.getElementById('occAboutH').textContent=(l==='en')?'About this day':'இந்த நாள் பற்றி';
+  document.getElementById('occAbout').textContent=c.about;
+  document.getElementById('occWorshipH').textContent=(l==='en')?'How it is observed':'வழிபாட்டு முறை';
+  document.getElementById('occWorship').textContent=c.worship;
+  const tH=document.getElementById('occTemplesH'), tP=document.getElementById('occTemples');
+  if(c.temples){ tH.textContent=(l==='en')?'Where it is celebrated':'எங்கு சிறப்பாகக் கொண்டாடப்படுகிறது'; tP.textContent=c.temples; tH.style.display=''; tP.style.display=''; }
+  else { tH.style.display='none'; tP.style.display='none'; }
+  document.getElementById('occNote').textContent=(l==='en')
+    ? 'Traditional practice, shared for cultural and devotional interest. Customs vary by family and region.'
+    : 'பாரம்பரிய வழக்கம் — பண்பாட்டு நோக்கில். வழக்கங்கள் குடும்பம்/பகுதிக்கு ஏற்ப மாறலாம்.';
+  document.getElementById('occModal').classList.add('show');
+}
+function closeOccasion(){ const m=document.getElementById('occModal'); if(m) m.classList.remove('show'); }
+
 function gotoDate(y,m,d){
   document.getElementById('pDate').value=y+"-"+String(m).padStart(2,'0')+"-"+String(d).padStart(2,'0');
   showTab(0); renderPanchang(); window.scrollTo({top:0,behavior:'smooth'});
@@ -1909,7 +2068,7 @@ function renderSpecialDays(){
   document.getElementById('splOut').innerHTML=monthEvents.map(o=>
     `<div class="row"><div class="dt">${String(o.d).padStart(2,'0')}-${String(calM+1).padStart(2,'0')}-${calY}<div class="wd">${WDAY[o.p.wd]} · ${o.p.td.month} ${o.p.td.day}</div>
        <button class="ics-day" onclick="addDayICS(${calY},${calM+1},${o.d})" title="${T('இந்நாளை காலண்டரில் சேர்','Add this day to calendar')}">🗓️ ${T('சேர்','Add')}</button></div>
-     <div>${o.ev.map(e=>`<span class="badspl">${e}</span>`).join(' ')}</div></div>`).join('')||"—";
+     <div>${o.ev.map(e=>occBadge(e)).join(' ')}</div></div>`).join('')||"—";
 }
 
 /* ============ Registration profiles & daily personal summary ============ */
@@ -2053,7 +2212,7 @@ function renderProfiles(){
         :`🌙 உங்கள் அடுத்த சந்திராஷ்டமம் — சந்திரன் <b>${NAK[s.ca.star]}</b> கடக்கும்போது: <b>${fmtJD(s.ca.span.start,s.tz)} → ${fmtJD(s.ca.span.end,s.tz)}</b>`)+'<br>':''}
       நடப்பு தசை: <b>${s.act?s.act.maha.lord+" / "+s.act.bhukti.lord+" புக்தி":"—"}</b><br>
       இன்று: ${s.p.paksha} ${s.p.tithiName} · ${NAK[s.p.ni]} · ${s.p.td.month} ${s.p.td.day}<br>
-      ${s.ev.length?'சிறப்பு: '+s.ev.map(e=>`<span class="badspl">${e}</span>`).join(' '):''}
+      ${s.ev.length?'சிறப்பு: '+s.ev.map(e=>occBadge(e)).join(' '):''}
       </div></div>`;
   });
   h+='</div>';
@@ -2835,7 +2994,8 @@ function playerToggle(){ plPlaying?playerPause():playerPlay(); }
 function PRO_LABEL(k){ return {
   palan:T('தனிப்பட்ட குடும்ப திட்டம்','Personalized Family Plan'),
   chandra:T('சந்திராஷ்டம தொடக்க & முடிவு நேரம்','Exact chandrashtamam start & end times'),
-  export:T('PDF & காலண்டர் ஏற்றுமதி','PDF & calendar export')}[k]; }
+  export:T('PDF & காலண்டர் ஏற்றுமதி','PDF & calendar export'),
+  about:T('சிறப்பு நாட்கள் விவரம் & வழிபாடு','Festival meanings & how to worship')}[k]; }
 function proExport(){ if(isPro()) return true; openPaywall('export'); return false; }
 /* ============================================================
    ACCOUNT INTEGRATION (Clerk + Supabase + Stripe via lib/nn-account.js)
