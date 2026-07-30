@@ -1,6 +1,7 @@
 // POST /api/stripe-webhook
-// Stripe calls this on every subscription change. It is the ONLY writer of
-// subscription status — the browser never sets Pro itself.
+// Stripe calls this on every subscription change. It is the writer of
+// subscription status for paid changes (card-less trials are started via
+// api/start-trial.js instead) — the browser never sets Pro itself.
 //
 // Configure in Stripe dashboard → Developers → Webhooks → add endpoint:
 //   https://<your-domain>/api/stripe-webhook
