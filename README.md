@@ -57,6 +57,17 @@ So you hear about jathagam consultation requests immediately:
 - Supabase → Database → **Webhooks** → on insert to `enquiries`, call an edge function or
   a service like Resend to email you. (Or a daily digest — your call.)
 
+## 7. Feedback email notification (optional but recommended)
+So the in-app feedback widget emails you the moment someone submits:
+- Set `RESEND_API_KEY`, `FEEDBACK_WEBHOOK_SECRET` (any random string) and optionally
+  `FEEDBACK_NOTIFY_EMAIL` (defaults to nallaneramapp@gmail.com) in Vercel env vars.
+- Supabase → Database → **Webhooks** → Create a new hook:
+  - Table: `public.feedback`, Events: **Insert**
+  - Type: HTTP Request → **POST** `https://<your-domain>/api/feedback-notify`
+  - HTTP Headers: `Authorization: Bearer <FEEDBACK_WEBHOOK_SECRET>` (same value as the env var)
+- See `api/feedback-notify.js` — no-ops cleanly (200, nothing sent) if `RESEND_API_KEY`
+  isn't set yet, so the webhook never shows as failing in Supabase.
+
 ---
 
 ## Test checklist (use Stripe **test mode** first)
