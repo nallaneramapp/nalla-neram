@@ -47,21 +47,18 @@ export default async function handler(req, res) {
       customer: customerId,
       line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
       subscription_data: {
-        trial_period_days: 7,
+        // No Stripe trial here — members already get a 30-day card-less trial
+        // (see api/start-trial.js). Checkout is only reached to start paying.
         metadata: { clerk_user_id: userId },
       },
-      // TEMP: disabled for sandbox testing — Stripe rejects automatic_tax until
-      // a valid head office address is set under Settings → Tax. RE-ENABLE this
-      // before real/live launch (needs a valid origin address set first — see
-      // README, and reinstate consent_collection above at the same time):
-      // automatic_tax: { enabled: true },
+      // Stripe Tax computes VAT/GST/sales tax at checkout. Enable Tax in the
+      // Stripe dashboard and set your origin address first (see README).
+      automatic_tax: { enabled: true },
       customer_update: { address: 'auto', name: 'auto' },
       allow_promotion_codes: true,
-      // TEMP: disabled for sandbox testing — Stripe rejects consent_collection
-      // until a Terms of Service URL is set under Settings → Public details,
-      // which requires filling out full business profile info. RE-ENABLE this
-      // before real/live launch (needs a Terms URL set first — see README):
-      // consent_collection: { terms_of_service: 'required' },
+      // Require the customer to accept your Terms at checkout (set the Terms URL
+      // in Stripe → Settings → Public details / Checkout). Legal record of consent.
+      consent_collection: { terms_of_service: 'required' },
       // The price is charged in the customer's local currency. Configure the
       // Stripe Price with multi-currency amounts that MATCH the site's NN_PRICES
       // table (charm .99 per currency) so advertised price === charged price.

@@ -1,9 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/*.js": { "memory": 1024, "maxDuration": 10 }
+    "api/*.js": { "runtime": "nodejs20.x" }
   },
   "rewrites": [
     { "source": "/", "destination": "/index.html" }
+  ],
+  "crons": [
+    { "path": "/api/trial-reminder", "schedule": "0 14 * * *" }
   ]
 }
