@@ -63,12 +63,28 @@ create table if not exists public.enquiries (
   created_at  timestamptz not null default now()
 );
 
+-- ---------- 4. FEEDBACK ------------------------------------------------------
+-- The floating feedback widget. Insert-only for users; the team reads via the
+-- service role / a protected admin view.
+create table if not exists public.feedback (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     text,                        -- Clerk user id, or null for guests
+  category    text not null,               -- feature_feedback|feature_request|content|bug|other
+  rating      smallint,                    -- 1-5, optional
+  message     text not null,
+  email       text,                        -- optional, only if a guest chose to include it
+  page        text,
+  lang        text,
+  created_at  timestamptz not null default now()
+);
+
 -- ============================================================
 --  ROW-LEVEL SECURITY — Postgres blocks cross-user access.
 -- ============================================================
 alter table public.subscriptions enable row level security;
 alter table public.profiles      enable row level security;
 alter table public.enquiries     enable row level security;
+alter table public.feedback      enable row level security;
 
 -- subscriptions: read only your own row. Writes are webhook-only (service role,
 -- which bypasses RLS).
@@ -95,6 +111,12 @@ create policy "own profiles delete" on public.profiles
 -- public API. The astrologer reads with the service role or SQL editor.
 drop policy if exists "anyone can submit enquiry" on public.enquiries;
 create policy "anyone can submit enquiry" on public.enquiries
+  for insert with check (true);
+
+-- feedback: anyone (signed-in or guest) may submit; nobody reads back via the
+-- public API. The team reads with the service role or SQL editor.
+drop policy if exists "anyone can submit feedback" on public.feedback;
+create policy "anyone can submit feedback" on public.feedback
   for insert with check (true);
 
 -- ============================================================
