@@ -23,7 +23,7 @@ window.NN_CONFIG = {
   supabaseUrl:        'https://apiluaxnapbnynrkhrtj.supabase.co',
   supabaseAnonKey:    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaWx1YXhuYXBibnlucmtocnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NjEzMjgsImV4cCI6MjEwMDMzNzMyOH0.FUe8AUE6M1ZN_3CfnLdna_PzP9qnldH1BUwESn4UaT8',
   modulePath:         '/lib/nn-account.js',
-  icsEndpoint:        false,  // set true after deploying api/ics.js — makes iPhone calendar downloads reliable
+  icsEndpoint:        true,   // set true after deploying api/ics.js — makes iPhone calendar downloads reliable
   trialDays:          30,     // length of the card-less free trial (started explicitly by the member)
   trialWarnDays:      5       // show the "trial ending" reminder this many days before it ends
 };
@@ -692,15 +692,24 @@ footer .flinks a{color:var(--gold2); cursor:pointer; text-decoration:none;}
 footer .flinks a:hover{color:var(--gold-bright); text-decoration:underline;}
 footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-width:640px; margin-left:auto; margin-right:auto;}
 
+/* chandrashtamam range chooser — lock longer ranges for trial members */
+#icsRange .lk{display:none;}
+#icsRange.trial .paidopt .lk{display:inline;}
+#icsRange.trial .paidopt{opacity:.6;}
+.ics-paidnote{display:none; font-size:.76rem; color:var(--ink3); margin-top:10px; text-align:center; line-height:1.45;}
+#icsRange.trial .ics-paidnote{display:block;}
+
 @media(max-width:640px){
   .hero h1{font-size:1.8rem;} .hero .h1-sub{font-size:1.1rem;}
   .section-head h2{font-size:1.45rem;}
-  .topbar-inner{padding:9px 13px; gap:7px;}
   .brand .bt .ta{font-size:.95rem;}
-  .navpills button.tabbtn{padding:7px 10px; font-size:.75rem;}
   .app-tabbar button{padding:7px 10px; font-size:.76rem;}
   .flagship{padding:22px 18px;} .flagship h3{font-size:1.25rem;}
   .stage{padding:20px 16px 16px; min-height:380px;}
+  .topbar-inner{padding:6px 12px; gap:8px;}
+  .navpills{gap:8px;}
+  .navpills .tabbtn:not(#nnAuthBtn){display:none;}
+  #goProBtn{display:none;}
 }
 </style>
 </head>
@@ -1290,10 +1299,11 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
       <div class="modal-feat"><span class="ta-only">எவ்வளவு காலத்திற்கு சேர்க்க வேண்டும்?</span><span class="en-only">How far ahead should we add?</span></div>
       <div class="cta-row">
         <button class="go" onclick="runIcsRange('next')"><span class="ta-only">➊ அடுத்த சந்திராஷ்டமம் மட்டும்</span><span class="en-only">➊ Next chandrashtamam only</span></button>
-        <button class="go" onclick="runIcsRange('3m')" style="background:linear-gradient(135deg,var(--maroon),var(--maroon2));color:var(--gold-bright)"><span class="ta-only">➌ அடுத்த 3 மாதங்கள்</span><span class="en-only">➌ Next 3 months</span></button>
-        <button class="go" onclick="runIcsRange('year')" style="background:transparent;border:1.5px solid var(--gold-line);color:var(--maroon);box-shadow:none"><span class="ta-only">📅 இந்த ஆண்டு இறுதிவரை</span><span class="en-only">📅 Until end of this year</span></button>
+        <button class="go paidopt" id="icsBtn3m" onclick="runIcsRange('3m')" style="background:linear-gradient(135deg,var(--maroon),var(--maroon2));color:var(--gold-bright)"><span class="ta-only">➌ அடுத்த 3 மாதங்கள்</span><span class="en-only">➌ Next 3 months</span><span class="lk"> 🔒</span></button>
+        <button class="go paidopt" id="icsBtnYear" onclick="runIcsRange('year')" style="background:transparent;border:1.5px solid var(--gold-line);color:var(--maroon);box-shadow:none"><span class="ta-only">📅 இந்த ஆண்டு இறுதிவரை</span><span class="en-only">📅 Until end of this year</span><span class="lk"> 🔒</span></button>
         <button class="later" onclick="closeIcsRange()"><span class="ta-only">ரத்து</span><span class="en-only">Cancel</span></button>
       </div>
+      <div class="ics-paidnote"><span class="ta-only">🔒 நீண்ட வரம்புகள் (3 மாதம் & ஆண்டு இறுதி) சந்தா உறுப்பினர்களுக்கு. உங்கள் முயற்சியில் அடுத்த சந்திராஷ்டமம் இலவசம்.</span><span class="en-only">🔒 Longer ranges (3 months & full year) are for paid members. During your trial, the next chandrashtamam is free.</span></div>
     </div>
   </div>
 </div>
@@ -1967,10 +1977,16 @@ function openIcsRange(kind,i){
   if(sub) sub.textContent = kind==='member'
     ? (l==='en'?"This person's chandrashtamam":'இந்த நபரின் சந்திராஷ்டமம்')
     : (l==='en'?'Whole family':'குடும்பம் முழுவதும்');
+  document.getElementById('icsRange').classList.toggle('trial', !isPaid());
   document.getElementById('icsRange').classList.add('show');
 }
 function closeIcsRange(){ const m=document.getElementById('icsRange'); if(m) m.classList.remove('show'); }
 function runIcsRange(mode){
+  if(mode!=='next' && !isPaid()){
+    closeIcsRange();
+    toast(T('அடுத்த 3 மாதம் & ஆண்டு இறுதி ஏற்றுமதி — சந்தா உறுப்பினர்களுக்கு. சந்தா செலுத்தி திறக்கலாம்.','The 3-month and full-year exports are for paid members — subscribe to unlock them.'));
+    return;
+  }
   const pend=_icsPending; closeIcsRange(); if(!pend) return;
   if(pend.kind==='member') addMemberChandraICS(pend.i, mode);
   else exportFamilyChandraICS(mode);
@@ -3189,6 +3205,7 @@ function isPro(){
   if(useServer()) return _pro;
   const st=trialState(); return st==='trialing'||st==='active';
 }
+function isPaid(){ return trialState()==='active'; }
 async function nnBoot(){
   if(!(window.NN_CONFIG && window.NN_CONFIG.enabled)) return;     // demo mode → nothing to load
   try{

@@ -38,7 +38,7 @@ export default function handler(req, res) {
   }
 
   res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-  res.setHeader('Content-Disposition', `attachment; filename="${name}"`);
+  res.setHeader('Content-Disposition', `inline; filename="${name}"`);
   res.setHeader('Cache-Control', 'no-store');
   res.status(200).send(ics);
 }
