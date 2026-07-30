@@ -23,7 +23,9 @@ window.NN_CONFIG = {
   supabaseUrl:        'https://apiluaxnapbnynrkhrtj.supabase.co',
   supabaseAnonKey:    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwaWx1YXhuYXBibnlucmtocnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NjEzMjgsImV4cCI6MjEwMDMzNzMyOH0.FUe8AUE6M1ZN_3CfnLdna_PzP9qnldH1BUwESn4UaT8',
   modulePath:         '/lib/nn-account.js',
-  icsEndpoint:        false   // set true after deploying api/ics.js — makes iPhone calendar downloads reliable
+  icsEndpoint:        false,  // set true after deploying api/ics.js — makes iPhone calendar downloads reliable
+  trialDays:          30,     // length of the card-less free trial (started explicitly by the member)
+  trialWarnDays:      5       // show the "trial ending" reminder this many days before it ends
 };
 </script>
 <style>
@@ -66,6 +68,21 @@ h1,h2,h3,h4{font-family:'Noto Serif Tamil','Cormorant Garamond',serif; font-weig
 .brand .bt{display:flex; flex-direction:column; line-height:1.05;}
 .brand .bt .ta{font-family:'Noto Serif Tamil',serif; font-size:1.12rem; font-weight:700; color:var(--gold-bright);}
 .brand .bt .en{font-family:'Marcellus',serif; font-size:.62rem; letter-spacing:3px; color:var(--gold2); text-transform:uppercase; opacity:.85;}
+.brand .bt .ta .brand-pre{display:block; font-size:.6rem; font-weight:600; letter-spacing:1px; color:var(--gold2); opacity:.8; line-height:1; margin-bottom:1px;}
+.brand .bt .en .brand-pre{font-size:.85em; letter-spacing:2px; opacity:.75; margin-right:4px;}
+/* Instagram links (top + footer) */
+.ig-badge{display:inline-flex; align-items:center; justify-content:center; color:#fff;
+  background:linear-gradient(45deg,#f09433,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888);}
+.ig-top{width:32px; height:32px; border-radius:9px; box-shadow:0 2px 8px rgba(0,0,0,.28); flex:0 0 auto;}
+.ig-top .ig-svg{width:19px; height:19px;}
+.ig-top:hover{filter:brightness(1.1);}
+.ig-foot{display:inline-flex; align-items:center; gap:9px; margin:2px auto 4px; color:var(--gold-bright);
+  text-decoration:none; font-size:.92rem; font-weight:600;}
+.ig-foot .ig-badge{width:30px; height:30px; border-radius:8px;}
+.ig-foot .ig-svg{width:18px; height:18px;}
+.ig-foot:hover{color:#fff;}
+.ig-svg{display:block;}
+@media print{ .ig-top,.ig-foot{display:none !important;} }
 .navpills{display:flex; gap:5px; margin-left:auto; flex-wrap:wrap; align-items:center;}
 .navpills button.tabbtn{position:relative; background:transparent; color:var(--cream); border:1px solid rgba(217,182,74,.42);
   border-radius:30px; padding:8px 14px; font-family:inherit; font-size:.84rem; cursor:pointer; transition:all .18s; white-space:nowrap; display:flex; align-items:center; gap:6px;}
@@ -93,6 +110,29 @@ h1,h2,h3,h4{font-family:'Noto Serif Tamil','Cormorant Garamond',serif; font-weig
 .nn-menu button:hover{background:var(--cream2);}
 .nn-menu button.nn-signout{color:var(--red); border-top:1px solid rgba(217,182,74,.4); margin-top:4px;}
 .nn-menu button.nn-signout:hover{background:var(--red-bg);}
+.nn-menu{max-width:calc(100vw - 24px);}
+/* visible Sign out inside the member strip (guaranteed reachable) */
+.mh-signout{margin-left:auto; background:var(--maroon); color:var(--gold-bright); border:1px solid var(--gold-line);
+  border-radius:999px; padding:3px 13px; font-size:.8rem; font-weight:700; cursor:pointer; text-decoration:none; white-space:nowrap;}
+.mh-signout:hover{filter:brightness(1.12);}
+/* Feedback: floating button + form fields */
+.fb-fab{position:fixed; right:16px; bottom:16px; z-index:70; display:inline-flex; align-items:center; gap:6px;
+  background:linear-gradient(135deg,var(--maroon),var(--maroon2)); color:var(--gold-bright); border:1px solid var(--gold-line);
+  border-radius:999px; padding:10px 15px; font-weight:700; font-size:.9rem; cursor:pointer; box-shadow:var(--shadow);}
+.fb-fab:hover{filter:brightness(1.1);}
+.fb-lbl{display:block; font-size:.8rem; font-weight:700; color:var(--ink2); margin:8px 0 4px;}
+.fb-input{width:100%; padding:9px 11px; border:1px solid var(--gold-line); border-radius:10px; background:#fff; color:var(--ink); font:inherit;}
+textarea.fb-input{resize:vertical;}
+.fb-stars{display:flex; flex-direction:row-reverse; justify-content:flex-end; gap:2px; font-size:1.5rem;}
+.fb-stars input{display:none;}
+.fb-stars label{cursor:pointer; line-height:1; color:#cfcfcf;}
+.fb-stars input:checked ~ label{color:var(--gold);}
+.fb-stars label:hover,.fb-stars label:hover ~ label{color:var(--gold2);}
+.fb-identity{margin:10px 0 2px;}
+.fb-radio{display:block; font-size:.9rem; margin:4px 0; cursor:pointer;}
+.fb-idnote{font-size:.85rem; color:var(--ink2); background:var(--cream2); border:1px solid var(--gold-line); border-radius:8px; padding:8px 10px;}
+.fb-priv{font-size:.72rem; color:var(--ink3); margin-top:10px;}
+@media print{ .fb-fab{display:none;} }
 /* ===== Pro member view — hide all the sales/marketing chrome once subscribed ===== */
 body.nn-pro-view #features,
 body.nn-pro-view .player-wrap,
@@ -104,6 +144,16 @@ body.nn-pro-view .hero-brandline,
 body.nn-pro-view #fLinkPricing,
 body.nn-pro-view #fLinkHowto,
 body.nn-pro-view #goProBtn{ display:none !important; }
+/* Trial reminder / expiry banner */
+#trialBanner{display:none; max-width:1280px; margin:0 auto 14px; padding:11px 16px; border-radius:12px;
+  align-items:center; gap:10px; font-size:.9rem; line-height:1.4;}
+#trialBanner.show{display:flex;}
+#trialBanner.warn{background:linear-gradient(135deg,#fff2cf,#ffe6a8); border:1px solid var(--gold-line); color:var(--ink);}
+#trialBanner.ended{background:linear-gradient(135deg,#f8e6e6,#f4d3d3); border:1px solid rgba(166,40,40,.5); color:var(--ink);}
+#trialBanner .tb-btn{margin-left:auto; background:var(--maroon); color:var(--gold-bright); border:1px solid var(--gold-line);
+  border-radius:999px; padding:5px 14px; font-weight:700; font-size:.82rem; cursor:pointer; white-space:nowrap;}
+#trialBanner .tb-btn:hover{filter:brightness(1.1);}
+@media print{ #trialBanner{display:none !important;} }
 /* calendar export buttons */
 .cal-export{display:flex; gap:9px; flex-wrap:wrap; justify-content:center; margin:4px 0 12px;}
 .cal-exp-btn{font-size:.84rem; padding:8px 16px;}
@@ -667,7 +717,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
         <g fill="#5c0d0d"><path d="M60 92 L60 84 Q65 78 70 84 L70 92 Z"/>
           <rect x="50" y="64" width="5" height="7" rx="1"/><rect x="62.5" y="64" width="5" height="7" rx="1"/><rect x="75" y="64" width="5" height="7" rx="1"/></g>
       </svg>
-      <span class="bt"><span class="ta">நல்ல நேரம்</span><span class="en">Nalla Neram · Pro</span></span>
+      <span class="bt"><span class="ta"><span class="brand-pre">உங்கள்</span>நல்ல நேரம்</span><span class="en"><span class="brand-pre">Ungal</span>Nalla Neram</span></span>
     </a>
     <div class="navpills">
       <button class="tabbtn active" id="tb0" onclick="showTab(0)"><span class="ta-only">📅 பஞ்சாங்கம்</span><span class="en-only">📅 Panchangam</span></button>
@@ -686,6 +736,9 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
           <button id="nnMenuSignout" class="nn-signout">Sign out</button>
         </div>
       </div>
+      <a class="ig-badge ig-top" href="https://www.instagram.com/nallaneramapp/" target="_blank" rel="noopener" aria-label="Instagram — @nallaneramapp" title="Follow @nallaneramapp on Instagram">
+        <svg class="ig-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.35" fill="currentColor"/></svg>
+      </a>
       <div class="langtog">
         <button id="lgTa" class="on" onclick="setLang('ta')">தமிழ்</button>
         <button id="lgEn" onclick="setLang('en')">EN</button>
@@ -700,6 +753,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
 
   <div class="hero-brandline"><span class="ta-only">நல்ல நேரம் · திருக்கணித முறை</span><span class="en-only">Nalla Neram · Thirukanitha Method</span></div>
   <div class="member-hi" id="memberHi"></div>
+  <div id="trialBanner"></div>
 
   <div class="hero-split">
 
@@ -1069,7 +1123,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
         <h3>Pro</h3>
         <div class="sub"><span class="ta-only">முழு குடும்பம் · 6 சாதனங்கள்</span><span class="en-only">Whole family · up to 6 devices</span></div>
         <div class="price"><span id="pricePro">CA$9.99</span> <small>/ <span class="ta-only">வருடம்</span><span class="en-only">year</span></small></div>
-        <div class="price-note"><span class="ta-only">7-நாள் இலவச முயற்சி · எந்நேரமும் ரத்து செய்யலாம்</span><span class="en-only">7-day free trial · cancel anytime</span><br><span id="priceProTax" style="opacity:.85"></span></div>
+        <div class="price-note"><span class="ta-only">30-நாள் இலவச முயற்சி · கார்டு தேவையில்லை</span><span class="en-only">30-day free trial · no card needed</span><br><span id="priceProTax" style="opacity:.85"></span></div>
         <ul>
           <li class="hero-feat"><span class="ck">★</span> <span class="ta-only"><b>தனிப்பட்ட குடும்ப திட்டம்</b> — ஒவ்வொருவரின் பிறந்த தேதி, நேரம், ஊர் அடிப்படையில் தினசரி பலன்</span><span class="en-only"><b>Personalized Family Plan</b> — daily readings from each person's date, time &amp; city of birth</span></li>
           <li class="hero-feat"><span class="ck">🌙</span> <span class="ta-only"><b>சந்திராஷ்டம தொடக்க &amp; முடிவு நேரம்</b> — நிமிட துல்லியத்துடன், அடுத்த 3 நாட்களுடன்</span><span class="en-only"><b>Exact chandrashtamam start &amp; end times</b> — to the minute, plus the next 3 windows</span></li>
@@ -1079,7 +1133,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
           <li><span class="ck">✓</span> <span class="ta-only">பயணத்திற்கு ஏற்ப இடம் மாற்றம்</span><span class="en-only">Travel-aware — switch city anytime</span></li>
           <li><span class="ck">✓</span> <span class="ta-only">Free-ல் உள்ள அனைத்தும்</span><span class="en-only">Everything in Free</span></li>
         </ul>
-        <button class="plan-btn pro" onclick="openPaywall('all')"><span class="ta-only">✦ 7-நாள் இலவச முயற்சி</span><span class="en-only">✦ Start 7-day free trial</span></button>
+        <button class="plan-btn pro" onclick="openPaywall('all')"><span class="ta-only">✦ 30-நாள் இலவச முயற்சி</span><span class="en-only">✦ Start 30-day free trial</span></button>
       </div>
 
       <div class="plan">
@@ -1144,8 +1198,12 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
     <rect x="10.2" y="18" width="3.6" height="1.7" rx=".5" fill="#f2d27a" stroke="#9a7412" stroke-width=".3"/>
     <rect x="11.05" y="19.5" width="1.9" height="13.7" rx=".7" fill="url(#velShaft)"/>
     <rect x="10.5" y="32.6" width="3" height="1.3" rx=".3" fill="#e6c565" stroke="#9a7412" stroke-width=".3"/>
-  </svg>நல்ல நேரம் · Nalla Neram Pro</div>
+  </svg>உங்கள் நல்ல நேரம் · Ungal Nalla Neram</div>
   <div class="fkolam">✦ ❋ ✼ ❋ ✦</div>
+  <a class="ig-foot" href="https://www.instagram.com/nallaneramapp/" target="_blank" rel="noopener">
+    <span class="ig-badge"><svg class="ig-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.35" fill="currentColor"/></svg></span>
+    <span class="ta-only">Instagram-ல் பின்தொடருங்கள்</span><span class="en-only">Follow us on Instagram</span> <b>@nallaneramapp</b>
+  </a>
   <div class="flinks">
     <a onclick="enterApp(0)"><span class="ta-only">பஞ்சாங்கம்</span><span class="en-only">Panchangam</span></a>
     <a id="fLinkHowto" onclick="document.getElementById('howto').scrollIntoView({behavior:'smooth'})"><span class="ta-only">குடும்ப திட்டம்</span><span class="en-only">Family Plan</span></a>
@@ -1158,11 +1216,50 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
     <a href="/legal.html#disclaimer"><span class="ta-only">பொறுப்புத் துறப்பு</span><span class="en-only">Disclaimer</span></a>
   </div>
   <div style="font-size:.82rem"><span id="licTag"></span></div>
-  <div class="fine">திருக்கணித முறை · Thirukanitha method · 250+ cities worldwide. © 2026 Nalla Neram · எல்லாம் வல்ல இறைவன் துணை 🙏</div>
+  <div class="fine">திருக்கணித முறை · Thirukanitha method · 250+ cities worldwide. © 2026 Ungal Nalla Neram · எல்லாம் வல்ல இறைவன் துணை 🙏</div>
 </footer>
 
 <!-- ===== PAYWALL ===== -->
 <!-- occasion detail (Pro): significance + how to worship -->
+<!-- ===== FEEDBACK — always-on floating button + form ===== -->
+<button id="fbFab" class="fb-fab" onclick="openFeedback()" aria-label="Feedback">💬 <span class="ta-only">கருத்து</span><span class="en-only">Feedback</span></button>
+<div class="modal-back" id="fbModal">
+  <div class="modal" style="max-width:460px">
+    <button class="closex" onclick="closeFeedback()">✕</button>
+    <div class="modal-top"><div class="crown">💬</div>
+      <h3><span class="ta-only">உங்கள் கருத்து</span><span class="en-only">Your feedback</span></h3>
+      <div class="sub"><span class="ta-only">எது பிடித்தது? எதை மேம்படுத்தலாம்? எந்த வசதி வேண்டும்?</span><span class="en-only">What do you love? What can we improve? What should we add?</span></div>
+    </div>
+    <div class="modal-body" style="text-align:left">
+      <label class="fb-lbl"><span class="ta-only">வகை</span><span class="en-only">Type</span></label>
+      <select id="fbCat" class="fb-input">
+        <option value="feature_feedback">💬 கருத்து / Feedback on a feature</option>
+        <option value="feature_request">✨ புதிய வசதி வேண்டும் / Request a feature</option>
+        <option value="content">🪔 சரிபார்ப்பு / Content or accuracy</option>
+        <option value="bug">🐞 வேலை செய்யவில்லை / Something's not working</option>
+        <option value="other">📝 மற்றவை / Other</option>
+      </select>
+      <label class="fb-lbl"><span class="ta-only">மதிப்பீடு (விருப்பம்)</span><span class="en-only">Rating (optional)</span></label>
+      <div class="fb-stars">
+        <input type="radio" name="fbRate" id="fbR5" value="5"><label for="fbR5">★</label>
+        <input type="radio" name="fbRate" id="fbR4" value="4"><label for="fbR4">★</label>
+        <input type="radio" name="fbRate" id="fbR3" value="3"><label for="fbR3">★</label>
+        <input type="radio" name="fbRate" id="fbR2" value="2"><label for="fbR2">★</label>
+        <input type="radio" name="fbRate" id="fbR1" value="1"><label for="fbR1">★</label>
+      </div>
+      <label class="fb-lbl"><span class="ta-only">உங்கள் கருத்து</span><span class="en-only">Your message</span></label>
+      <textarea id="fbMsg" class="fb-input" rows="4" placeholder="…"></textarea>
+      <div id="fbIdentity" class="fb-identity"></div>
+      <div id="fbOut"></div>
+      <div class="cta-row" style="margin-top:14px">
+        <button class="go" onclick="submitFeedback()">✦ <span class="ta-only">அனுப்பு</span><span class="en-only">Send feedback</span></button>
+        <button class="later" onclick="closeFeedback()"><span class="ta-only">மூடுக</span><span class="en-only">Close</span></button>
+      </div>
+      <div class="fb-priv"><span class="ta-only">நீங்கள் பகிரும் தகவல் இந்த சேவையை மேம்படுத்த மட்டுமே பயன்படும்.</span><span class="en-only">What you share is used only to improve this service.</span></div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-back" id="occModal">
   <div class="modal" style="max-width:470px">
     <button class="closex" onclick="closeOccasion()">✕</button>
@@ -1175,7 +1272,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
       <h4 class="occ-h" id="occTemplesH" style="display:none"></h4>
       <p class="occ-p" id="occTemples" style="display:none"></p>
       <div class="occ-note" id="occNote"></div>
-      <div class="cta-row" style="margin-top:14px"><button class="later" onclick="closeOccasion()"><span class="ta-only">மூடு</span><span class="en-only">Close</span></button></div>
+      <div class="cta-row" style="margin-top:14px"><button class="later" onclick="closeOccasion()"><span class="ta-only">மூடுக</span><span class="en-only">Close</span></button></div>
     </div>
   </div>
 </div>
@@ -1220,14 +1317,14 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
       </ul>
       <div class="modal-price">
         <div class="amt"><span id="pwPrice">CA$9.99</span> <small>/ <span class="ta-only">வருடம்</span><span class="en-only">year</span></small></div>
-        <div class="free-trial">✦ <span class="ta-only">7-நாள் இலவச முயற்சி — இப்போது கட்டணம் இல்லை</span><span class="en-only">7-day free trial — no charge today</span></div>
+        <div class="free-trial" id="pwTrialLine">✦ <span class="ta-only">30-நாள் இலவச முயற்சி — கார்டு தேவையில்லை</span><span class="en-only">30-day free trial — no card needed</span></div>
       </div>
       <div class="cta-row">
-        <button class="go" onclick="startTrial()"><span class="ta-only">✦ இலவச முயற்சியை தொடங்கு</span><span class="en-only">✦ Start free trial</span></button>
+        <button class="go" id="pwGo" onclick="startTrial()"><span class="ta-only">✦ 30-நாள் இலவச முயற்சியைத் தொடங்கு</span><span class="en-only">✦ Start 30-day free trial</span></button>
         <button class="later" onclick="closePaywall()"><span class="ta-only">பிறகு பார்க்கிறேன்</span><span class="en-only">Maybe later</span></button>
       </div>
-      <div style="font-size:.68rem;color:var(--ink3);text-align:center;margin-top:9px;line-height:1.45">
-        <span class="ta-only">7-நாள் இலவச முயற்சிக்குப் பிறகு <b id="pwRenew">CA$9.99</b>/வருடம் தானாகப் புதுப்பிக்கும் (வரி சேர்க்கப்படலாம்) — எந்நேரமும் ரத்து செய்யலாம். தொடர்வதன் மூலம் எங்கள் <a href="/legal.html#terms" style="color:var(--maroon)">விதிமுறைகளை</a> ஏற்கிறீர்கள்.</span><span class="en-only">After the 7-day trial, renews automatically at <b id="pwRenewEn">CA$9.99</b>/year (taxes may apply) — cancel anytime. By continuing you agree to our <a href="/legal.html#terms" style="color:var(--maroon)">Terms</a>.</span>
+      <div id="pwFine" style="font-size:.68rem;color:var(--ink3);text-align:center;margin-top:9px;line-height:1.45">
+        <span class="ta-only">30-நாள் முயற்சிக்குப் பிறகு, தொடர விரும்பினால் மட்டும் கட்டணம். கார்டு இப்போது தேவையில்லை. <a href="/legal.html#terms" style="color:var(--maroon)">விதிமுறைகள்</a>.</span><span class="en-only">After the 30-day trial, you pay only if you choose to continue. No card needed now. <a href="/legal.html#terms" style="color:var(--maroon)">Terms</a>.</span>
       </div>
       <div class="havekey" id="pwHaveKey" style="display:none"><span class="ta-only">ஏற்கனவே கணக்கு உள்ளதா?</span><span class="en-only">Already have an account?</span> <a onclick="nnPaywallSignIn()"><span class="ta-only">உள்நுழையவும்</span><span class="en-only">Sign in</span></a></div>
     </div>
@@ -2041,6 +2138,51 @@ function showOccasion(key){
 }
 function closeOccasion(){ const m=document.getElementById('occModal'); if(m) m.classList.remove('show'); }
 
+/* ============================================================
+   FEEDBACK — a running form. Signed-in feedback is tagged with the
+   member's email automatically; signed-out users may send anonymously
+   OR choose to include their email.
+   ============================================================ */
+function openFeedback(){
+  const idBox=document.getElementById('fbIdentity'); if(!idBox) return;
+  const signed=nnIsSignedIn();
+  let email=''; try{ if(signed){ const u=window.NN.nnUser(); email=(u&&u.primaryEmailAddress&&u.primaryEmailAddress.emailAddress)||''; } }catch(e){}
+  if(signed){
+    idBox.innerHTML='<div class="fb-idnote">'+T('அனுப்புநர்','Sending as')+': <b>'+(email||T('உங்கள் கணக்கு','your account'))+'</b></div>';
+  } else {
+    idBox.innerHTML=
+      '<label class="fb-radio"><input type="radio" name="fbId" value="anon" checked onchange="fbToggleEmail()"> '+T('அநாமதேயமாக அனுப்பு','Send anonymously')+'</label>'+
+      '<label class="fb-radio"><input type="radio" name="fbId" value="email" onchange="fbToggleEmail()"> '+T('பதிலுக்கு என் மின்னஞ்சலைச் சேர்','Include my email (so we can reply)')+'</label>'+
+      '<input type="email" id="fbEmail" class="fb-input" style="display:none; margin-top:6px" placeholder="you@email.com">';
+  }
+  const o=document.getElementById('fbOut'); if(o) o.innerHTML='';
+  document.getElementById('fbModal').classList.add('show');
+}
+function fbToggleEmail(){ const r=document.querySelector('input[name=fbId]:checked'); const inp=document.getElementById('fbEmail'); if(inp) inp.style.display=(r&&r.value==='email')?'':'none'; }
+function closeFeedback(){ const m=document.getElementById('fbModal'); if(m) m.classList.remove('show'); }
+function submitFeedback(){
+  const out=document.getElementById('fbOut'); if(!out) return;
+  const cat=document.getElementById('fbCat').value;
+  const rr=document.querySelector('input[name=fbRate]:checked'); const rating=rr?+rr.value:null;
+  const msg=(document.getElementById('fbMsg').value||'').trim();
+  const err=m=>{ out.innerHTML='<div class="enq-err">⚠️ '+m+'</div>'; };
+  if(!msg) return err(T('சில வார்த்தைகள் எழுதவும்.','Please write a few words.'));
+  let email=null;
+  if(!nnIsSignedIn()){
+    const r=document.querySelector('input[name=fbId]:checked');
+    if(r&&r.value==='email'){ email=(document.getElementById('fbEmail').value||'').trim();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return err(T('சரியான மின்னஞ்சலை உள்ளிடவும், அல்லது அநாமதேயத் தேர்வு.','Enter a valid email, or choose anonymous.')); }
+  }
+  const rec={category:cat, rating:rating, message:msg, email:email, page:location.pathname, lang:curLang()};
+  const done=()=>{ out.innerHTML='<div class="enq-ok"><b>'+T('🙏 நன்றி! உங்கள் கருத்து பெறப்பட்டது.','🙏 Thank you! Your feedback was received.')+'</b></div>';
+    document.getElementById('fbMsg').value=''; const rc=document.querySelector('input[name=fbRate]:checked'); if(rc) rc.checked=false; setTimeout(closeFeedback,1500); };
+  if(useServer() && window.NN && window.NN.nnSubmitFeedback){
+    window.NN.nnSubmitFeedback(rec).then(done).catch(e=>{ console.error('feedback submit',e); fbFallback(rec); done(); });
+  } else { fbFallback(rec); done(); }
+}
+/* keep a local copy so nothing is lost before the backend feedback table is live */
+function fbFallback(rec){ try{ const all=JSON.parse(localStorage.getItem('nnFeedback')||'[]'); all.push({...rec,at:new Date().toISOString()}); localStorage.setItem('nnFeedback',JSON.stringify(all)); }catch(e){} }
+
 function gotoDate(y,m,d){
   document.getElementById('pDate').value=y+"-"+String(m).padStart(2,'0')+"-"+String(d).padStart(2,'0');
   showTab(0); renderPanchang(); window.scrollTo({top:0,behavior:'smooth'});
@@ -2768,7 +2910,7 @@ function heroPlace(){
 /* compact time range: drop the repeated meridiem — "10:30 – 12:00 PM" */
 function rangeShort(a,b){
   const A=fmtTime(a), B=fmtTime(b);
-  return (A.slice(-2)===B.slice(-2)) ? A.slice(0,-3)+' – '+B : A+' – '+B;
+  return (A.slice(-2)===B.slice(-2)) ? A.slice(0,-3)+'–'+B : A+'–'+B;
 }
 /* World map with regional callout boxes — each city's own Rahu kalam for today. */
 function renderHeroCompare(){
@@ -2789,8 +2931,8 @@ function renderHeroCompare(){
             `<circle class="pin" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.4"/>`+
             `<text class="cabbr" x="${(px+ldx).toFixed(1)}" y="${(py+ldy).toFixed(1)}" font-size="4.6" text-anchor="${lan}">${c[2]}</text>`;
       const ly=R.y+R_HEAD+ (i+1)*R_LINE;
-      lines+=`<text class="cname" x="${R.x+5}" y="${ly}" font-size="6">${l==='en'?c[1]:c[0]}</text>`+
-             `<text class="ctime" x="${R.x+R.w-5}" y="${ly}" font-size="6" text-anchor="end">${rangeShort(p.rahu.from,p.rahu.to)}</text>`;
+      lines+=`<text class="cname" x="${R.x+4.5}" y="${ly}" font-size="5.2">${l==='en'?c[1]:c[0]}</text>`+
+             `<text class="ctime" x="${(R.x+R.w-4).toFixed(1)}" y="${ly}" font-size="5" text-anchor="end">${rangeShort(p.rahu.from,p.rahu.to)}</text>`;
     });
     if(anchor) boxes+=`<line class="clink" x1="${R.lx}" y1="${R.ly}" x2="${anchor.x.toFixed(1)}" y2="${anchor.y.toFixed(1)}"/>`;
     boxes+=`<rect class="callout" x="${R.x}" y="${R.y}" width="${R.w}" height="${h.toFixed(1)}" rx="4"/>`+
@@ -3005,11 +3147,47 @@ function proExport(){ if(isPro()) return true; openPaywall('export'); return fal
    ============================================================ */
 function useServer(){ return !!(window.NN_CONFIG && window.NN_CONFIG.enabled && window.NN); }
 let _pro=false;                                   // server Pro cache
-async function refreshPro(){ if(useServer()){ try{ _pro=await window.NN.nnIsPro(); }catch(e){ _pro=false; } } }
-/* Pro status: server truth when live, localStorage demo otherwise. */
+let _trial={state:'none',daysLeft:null,end:null}; // server trial cache: state = none|trialing|expired|active
+async function refreshPro(){ if(useServer()){
+  try{ _pro=await window.NN.nnIsPro(); }catch(e){ _pro=false; }
+  try{ if(window.NN.nnTrialInfo){ const t=await window.NN.nnTrialInfo(); if(t) _trial=t; } }catch(e){}
+} }
+function nnIsSignedIn(){ try{ return !!(useServer() && window.NN.nnSignedIn()); }catch(e){ return false; } }
+function trialDaysCfg(){ return (window.NN_CONFIG && window.NN_CONFIG.trialDays) || 30; }
+function trialWarnCfg(){ return (window.NN_CONFIG && window.NN_CONFIG.trialWarnDays) || 5; }
+/* Trial/subscription state. Live: from the server. Demo: from localStorage. */
+function trialState(){
+  if(useServer()) return _trial.state || 'none';
+  try{ const s=JSON.parse(localStorage.getItem('nnPro')||'null'); if(!s) return 'none';
+    if(s.mode==='sub') return 'active';
+    if(s.end){ return Date.now()<s.end ? 'trialing' : 'expired'; }
+    return 'none'; }catch(e){ return 'none'; }
+}
+function trialDaysLeft(){
+  if(useServer()) return _trial.daysLeft;
+  try{ const s=JSON.parse(localStorage.getItem('nnPro')||'null'); if(s&&s.end) return Math.max(0,Math.ceil((s.end-Date.now())/86400000)); }catch(e){}
+  return null;
+}
+function _trialDaysTxt(){ const d=trialDaysLeft(); if(d==null) return ''; return ' · '+(curLang()==='en'?(d+' day'+(d===1?'':'s')+' left'):(d+' நாள் மீதம்')); }
+/* In-app trial reminder (≤ warn window) and post-expiry prompt. */
+function renderTrialBanner(pro){
+  const el=document.getElementById('trialBanner'); if(!el) return;
+  const st=trialState(), D=trialDaysLeft(), W=trialWarnCfg();
+  el.className=''; el.innerHTML='';
+  if(pro && st==='trialing' && D!=null && D<=W){
+    el.className='show warn';
+    el.innerHTML='<span>⏳ '+T('உங்கள் இலவச முயற்சி '+D+' நாட்களில் முடிகிறது. Pro-வைத் தொடர சந்தா செலுத்துங்கள்.','Your free trial ends in '+D+' day'+(D===1?'':'s')+'. Subscribe to keep Pro.')+'</span>'+
+      '<button class="tb-btn" onclick="goSubscribe()">'+T('சந்தா செலுத்து','Subscribe')+'</button>';
+  } else if(!pro && st==='expired'){
+    el.className='show ended';
+    el.innerHTML='<span>🔔 '+T('உங்கள் இலவச முயற்சி முடிந்தது. Pro வசதிகளை மீட்டெடுக்க சந்தா செலுத்துங்கள்.','Your free trial has ended. Subscribe to restore your Pro features.')+'</span>'+
+      '<button class="tb-btn" onclick="goSubscribe()">'+T('சந்தா செலுத்து','Subscribe')+'</button>';
+  }
+}
+/* Pro status: server truth when live (trialing counts as Pro), localStorage demo otherwise. */
 function isPro(){
   if(useServer()) return _pro;
-  try{ const s=JSON.parse(localStorage.getItem('nnPro')||'null'); return !!(s&&s.ok); }catch(e){ return false; }
+  const st=trialState(); return st==='trialing'||st==='active';
 }
 async function nnBoot(){
   if(!(window.NN_CONFIG && window.NN_CONFIG.enabled)) return;     // demo mode → nothing to load
@@ -3052,12 +3230,12 @@ function renderAuthBtn(){
     document.getElementById('nnMenuEmail').textContent=email;
     const pro=isPro();
     document.getElementById('nnMenuStatus').innerHTML = pro
-      ? '<span class="nn-pro">✦ '+T('Pro உறுப்பினர்','Pro Member')+'</span>'
+      ? '<span class="nn-pro">✦ '+(trialState()==='trialing'?(T('Pro முயற்சி','Pro trial')+(_trialDaysTxt())):T('Pro உறுப்பினர்','Pro Member'))+'</span>'
       : '<span class="nn-free">'+T('இலவச திட்டம்','Free plan')+'</span>';
     const mgr=document.getElementById('nnMenuManage'); mgr.textContent='⚙ '+T('கணக்கை நிர்வகி','Manage account'); mgr.onclick=()=>{ nnCloseMenu(); window.NN.nnManageAccount(); };
-    const bill=document.getElementById('nnMenuBilling'); bill.textContent='💳 '+T('சந்தாவை நிர்வகி','Manage subscription'); bill.style.display=pro?'':'none'; bill.onclick=()=>{ nnCloseMenu(); window.NN.nnOpenBillingPortal(); };
+    const bill=document.getElementById('nnMenuBilling'); bill.textContent='💳 '+T('சந்தாவை நிர்வகி','Manage subscription'); bill.style.display=(pro&&trialState()==='active')?'':'none'; bill.onclick=()=>{ nnCloseMenu(); window.NN.nnOpenBillingPortal(); };
     const ref=document.getElementById('nnMenuRefresh'); ref.textContent='🔄 '+T('நிலையைப் புதுப்பி','Refresh status'); ref.onclick=()=>{ nnCloseMenu(); refreshAccountUI(); toast(T('புதுப்பிக்கப்பட்டது','Refreshed')); };
-    const out=document.getElementById('nnMenuSignout'); out.textContent='↪ '+T('வெளியேறு','Sign out'); out.onclick=()=>{ nnCloseMenu(); window.NN.nnSignOut(); };
+    const out=document.getElementById('nnMenuSignout'); out.textContent='↪ '+T('வெளியேறுக','Sign out'); out.onclick=()=>{ nnCloseMenu(); window.NN.nnSignOut(); };
   } else {
     b.textContent=T('உள்நுழை','Sign in');
     b.onclick=()=>window.NN.nnSignIn();
@@ -3108,10 +3286,14 @@ function showRibbon(tabSel,feature){
   const tab=document.getElementById(tabSel);
   if(!tab||tab.querySelector('.preview-ribbon')) return;
   const r=document.createElement('div'); r.className='preview-ribbon';
-  r.innerHTML='<span class="pr-tag">✦ '+T('இலவச முன்னோட்டம்','Free preview')+'</span>'+
-    '<span class="pr-txt">'+T('இது உங்கள் இலவச முன்னோட்டம் — <b>'+PRO_LABEL(feature)+'</b>. வரம்பற்ற அணுகலுக்கு Pro-ஐ தொடங்குங்கள்.',
-        'This is your free preview of <b>'+PRO_LABEL(feature)+'</b>. Start Pro for unlimited access.')+'</span>'+
-    '<button class="pr-btn" onclick="openPaywall(\''+feature+'\')">✦ '+T('Pro-ஐ திற','Unlock Pro')+'</button>';
+  const D=trialDaysCfg();
+  const tag=T('இலவச முன்னோட்டம்','Free preview');
+  const txt=T('இது உங்கள் இலவச முன்னோட்டம் — <b>'+PRO_LABEL(feature)+'</b>. முழு அணுகலுக்கு '+D+'-நாள் இலவச முயற்சியைத் தொடங்குங்கள் (கார்டு தேவையில்லை).',
+              'This is your free preview of <b>'+PRO_LABEL(feature)+'</b>. Start your '+D+'-day free trial for full access — no card needed.');
+  const btn=T('இலவச முயற்சியைத் தொடங்கு','Start free trial');
+  r.innerHTML='<span class="pr-tag">✦ '+tag+'</span>'+
+    '<span class="pr-txt">'+txt+'</span>'+
+    '<button class="pr-btn" onclick="openPaywall(\''+feature+'\')">✦ '+btn+'</button>';
   tab.insertBefore(r,tab.firstChild);
 }
 /* Festivals / Special Days are FREE — no gate, no preview limit */
@@ -3389,6 +3571,7 @@ window.addEventListener('hashchange',()=>{ const m=location.hash.match(/^#tab([0
 function enterApp(n){ showTab(n); if(n!==0){ const a=document.getElementById('app'); if(a) a.scrollIntoView({behavior:'smooth'}); } }
 
 /* ============ Paywall ============ */
+function priceStr(){ try{ const P=NN_PRICES[nnCurrency()]||NN_PRICES.CAD; return P.sym+P.amt; }catch(e){ return 'CA$9.99'; } }
 function openPaywall(feature){
   const f=document.getElementById('pwFeat');
   if(feature&&feature!=='all'&&PRO_LABEL(feature))
@@ -3396,6 +3579,25 @@ function openPaywall(feature){
                   '<b>'+PRO_LABEL(feature)+'</b> is a Pro feature.');
   else f.textContent=T('குடும்பம் முழுவதற்கும் தனிப்பட்ட பலன் — ஒரே சந்தாவில்.',
                        'A personalized reading for everyone in your family — one subscription.');
+  /* CTA depends on trial state: never trialed → start free trial; trial ended → subscribe. */
+  const st=trialState(), D=trialDaysCfg(), W=trialWarnCfg(), pr=priceStr(), expired=(st==='expired');
+  const go=document.getElementById('pwGo'), line=document.getElementById('pwTrialLine'), fine=document.getElementById('pwFine');
+  if(go){
+    go.innerHTML = expired
+      ? '✦ <span class="ta-only">Pro-வை தொடர சந்தா செலுத்து</span><span class="en-only">Subscribe to Pro</span>'
+      : '✦ <span class="ta-only">'+D+'-நாள் இலவச முயற்சியைத் தொடங்கு</span><span class="en-only">Start '+D+'-day free trial</span>';
+    go.onclick = expired ? goSubscribe : startTrial;
+  }
+  if(line){
+    line.innerHTML = expired
+      ? '<span class="ta-only">உங்கள் இலவச முயற்சி முடிந்தது — தொடர சந்தா செலுத்துங்கள்.</span><span class="en-only">Your free trial has ended — subscribe to continue.</span>'
+      : '✦ <span class="ta-only">'+D+'-நாள் இலவச முயற்சி — கார்டு தேவையில்லை</span><span class="en-only">'+D+'-day free trial — no card needed</span>';
+  }
+  if(fine){
+    fine.innerHTML = expired
+      ? '<span class="ta-only">'+pr+'/வருடம் (வரி சேர்க்கப்படலாம்). தொடர்வதன் மூலம் எங்கள் <a href="/legal.html#terms" style="color:var(--maroon)">விதிமுறைகளை</a> ஏற்கிறீர்கள்.</span><span class="en-only">'+pr+'/year (taxes may apply). By continuing you agree to our <a href="/legal.html#terms" style="color:var(--maroon)">Terms</a>.</span>'
+      : '<span class="ta-only">'+D+'-நாள் முயற்சிக்குப் பிறகு, தொடர விரும்பினால் மட்டும் '+pr+'/வருடம். கார்டு இப்போது தேவையில்லை; முடிவதற்கு '+W+' நாட்கள் முன் நினைவூட்டுவோம். <a href="/legal.html#terms" style="color:var(--maroon)">விதிமுறைகள்</a>.</span><span class="en-only">After the '+D+'-day trial, only if you choose to continue it is '+pr+'/year. No card needed now; we’ll remind you '+W+' days before it ends. <a href="/legal.html#terms" style="color:var(--maroon)">Terms</a>.</span>';
+  }
   const hk=document.getElementById('pwHaveKey'); if(hk) hk.style.display = useServer() ? '' : 'none';
   document.getElementById('paywall').classList.add('show');
 }
@@ -3403,15 +3605,31 @@ function nnPaywallSignIn(){ if(useServer()){ closePaywall(); window.NN.nnSignIn(
 function closePaywall(){ document.getElementById('paywall').classList.remove('show'); }
 function toggleKeyBox(){ document.getElementById('keyBox').classList.toggle('show'); }
 function startTrial(){
-  if(useServer()){                          // → real Stripe checkout (signs in first if needed)
+  const D=trialDaysCfg();
+  if(useServer()){                          // card-less trial: create a 'trialing' row server-side (no Stripe)
+    if(!window.NN.nnSignedIn()){ closePaywall(); return window.NN.nnSignIn(); }
+    if(!window.NN.nnStartTrial){ return goSubscribe(); }   // safety if backend not yet updated
+    return window.NN.nnStartTrial().then(()=>{ closePaywall(); refreshAccountUI();
+        toast(T('✦ '+D+'-நாள் இலவச முயற்சி தொடங்கியது! 🙏','✦ Your '+D+'-day free trial has started! 🙏')); })
+      .catch(e=>{ console.error('start trial',e); toast(T('முயற்சியைத் தொடங்க முடியவில்லை','Could not start the trial')); });
+  }
+  /* DEMO: local trial so the model is previewable before the backend is live. */
+  try{ localStorage.setItem('nnPro',JSON.stringify({ok:1,mode:'trial',t:Date.now(),end:Date.now()+D*86400000})); }catch(e){}
+  applyProState(); closePaywall();
+  toast(T('✦ '+D+'-நாள் இலவச முயற்சி தொடங்கியது!','✦ '+D+'-day free trial started!'));
+  refreshCurrent();
+}
+/* Paid subscription — after the trial, or to continue. Real Stripe checkout. */
+function goSubscribe(){
+  if(useServer()){
     closePaywall();
     if(!window.NN.nnSignedIn()) return window.NN.nnSignIn();
     return window.NN.nnStartCheckout();
   }
-  /* DEMO: unlocks Pro locally so the model is previewable before the backend is live. */
-  try{ localStorage.setItem('nnPro',JSON.stringify({ok:1,mode:'trial',t:Date.now()})); }catch(e){}
+  /* DEMO */
+  try{ localStorage.setItem('nnPro',JSON.stringify({ok:1,mode:'sub',t:Date.now()})); }catch(e){}
   applyProState(); closePaywall();
-  toast(T('✦ Pro தொடங்கப்பட்டது — 7-நாள் இலவச முயற்சி!','✦ Pro started — 7-day free trial!'));
+  toast(T('✦ Pro-வுக்கு நன்றி! 🙏','✦ Thank you for subscribing! 🙏'));
   refreshCurrent();
 }
 function currentTab(){ for(let i=1;i<=3;i++){ const t=document.getElementById('tab'+i); if(t&&t.classList.contains('active')) return i; } return 0; }
@@ -3420,6 +3638,7 @@ function refreshCurrent(){
   try{ renderTodayBanner(); renderPanchang(); }catch(e){}
   const n=currentTab(); if(n===1) renderSpecialDays(); else if(n===3) renderProfiles();
   renderHeroLive();
+  try{ renderTrialBanner(isPro()); }catch(e){}
 }
 
 function applyProState(){
@@ -3429,13 +3648,16 @@ function applyProState(){
   const mh=document.getElementById('memberHi');
   if(mh && pro){
     let nm=''; try{ if(useServer()&&window.NN.nnSignedIn()){ const u=window.NN.nnUser(); nm=(u&&u.firstName)?', '+u.firstName:''; } }catch(e){}
-    mh.innerHTML='✦ <b>'+T('Pro உறுப்பினர்','Pro member')+nm+'</b> — '+
-      T('உங்கள் பஞ்சாங்கம் &amp; குடும்ப பலன் தயார். 🙏','your panchangam &amp; family plan are ready below. 🙏');
+    const tier = trialState()==='trialing' ? T('Pro முயற்சி','Pro trial') : T('Pro உறுப்பினர்','Pro member');
+    let so=''; if(nnIsSignedIn()) so='<a class="mh-signout" onclick="try{window.NN.nnSignOut()}catch(e){}">↪ '+T('வெளியேறுக','Sign out')+'</a>';
+    mh.innerHTML='<span>✦ <b>'+tier+nm+'</b> — '+
+      T('உங்கள் பஞ்சாங்கம் &amp; குடும்ப பலன் தயார். 🙏','your panchangam &amp; family plan are ready below. 🙏')+'</span>'+so;
   }
   const l3=document.getElementById('lb3'); if(l3) l3.textContent=pro?'✓':'PRO';
   const b=document.getElementById('goProBtn');
   if(b){ if(pro){ b.textContent='✦ '+T('Pro உறுப்பினர்','Pro Member'); b.classList.add('ispro'); b.onclick=()=>{}; }
          else { b.textContent='✦ Go Pro'; b.classList.remove('ispro'); b.onclick=()=>openPaywall('all'); } }
+  renderTrialBanner(pro);
   const lt=document.getElementById('licTag');
   if(lt){
     if(pro && useServer()){
