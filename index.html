@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Free daily Tamil calendar & panchangam computed for your city — tithi, nakshatram, Rahu kalam, Gowri nalla neram, chandrashtamam & festivals. Accurate Thirukanitha timings for Toronto, New York, London, Chennai & 250+ cities.">
+<meta name="description" content="Free daily Tamil calendar & panchangam computed for your city — tithi, nakshatram, Rahu kalam, Gowri nalla neram, chandrashtamam & festivals. Accurate Thirukanitha timings for Toronto, New York, London, Chennai & 90+ cities.">
 <title>Your Nalla Neram · Today's Tamil Calendar & Panchangam | உங்கள் நல்ல நேரம்</title>
 <link rel="canonical" href="https://www.yournallaneram.com/">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -13,14 +13,14 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Ungal Nalla Neram">
 <meta property="og:title" content="Your Nalla Neram · Today's Tamil Calendar & Panchangam for your city">
-<meta property="og:description" content="Free daily Tamil panchangam — tithi, nakshatram, Rahu kalam, Gowri nalla neram, chandrashtamam & festivals — accurate for the city you actually live in. 250+ cities worldwide.">
+<meta property="og:description" content="Free daily Tamil panchangam — tithi, nakshatram, Rahu kalam, Gowri nalla neram, chandrashtamam & festivals — accurate for the city you actually live in. 90+ cities worldwide.">
 <meta property="og:url" content="https://www.yournallaneram.com/">
 <meta property="og:image" content="https://www.yournallaneram.com/og-image.png">
 <meta property="og:locale" content="ta_IN">
 <meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Your Nalla Neram · Today's Tamil Calendar & Panchangam">
-<meta name="twitter:description" content="Free daily Tamil panchangam for your city — Rahu kalam, nalla neram, chandrashtamam & festivals. 250+ cities.">
+<meta name="twitter:description" content="Free daily Tamil panchangam for your city — Rahu kalam, nalla neram, chandrashtamam & festivals. 90+ cities.">
 <meta name="twitter:image" content="https://www.yournallaneram.com/og-image.png">
 
 <!-- Google tag (gtag.js) -->
@@ -239,24 +239,25 @@ body.nn-pro-view .exp-pro{display:none;}
   /* display:none (not visibility) removes hidden elements from flow — no blank pages */
   body > *{display:none !important;}
   body > #calPrint{display:block !important; padding:0; color:#3a2410;}
-  #calPrint .cp-head{text-align:center; margin-bottom:6px;}
-  #calPrint .cp-head h2{color:#5c0d0d; font-family:'Noto Serif Tamil',serif; font-size:1.1rem; margin:0;}
-  #calPrint .cp-head .cp-sub{font-size:.76rem; color:#6b5334;}
+  #calPrint .cp-head{text-align:center; margin-bottom:8px; border-bottom:2px solid #5c0d0d; padding-bottom:6px;}
+  #calPrint .cp-head h2{color:#5c0d0d; font-family:'Noto Serif Tamil',serif; font-size:1.3rem; margin:0;}
+  #calPrint .cp-head .cp-sub{font-size:.8rem; color:#6b5334; margin-top:2px;}
   #calPrint .calgrid{display:grid; grid-template-columns:repeat(7,1fr); gap:2px;}
-  #calPrint .calwd{text-align:center; font-weight:700; font-size:.58rem; padding:2px 0; color:#5c0d0d;}
-  #calPrint .calcell{border:1px solid #ccbf99; min-height:48px; padding:2px; font-size:.52rem; overflow:hidden; break-inside:avoid;}
+  #calPrint .calwd{text-align:center; font-weight:700; font-size:.62rem; padding:2px 0; color:#5c0d0d;}
+  #calPrint .calcell{border:1px solid #ccbf99; min-height:58px; padding:2px 3px; font-size:.52rem; overflow:hidden; break-inside:avoid;}
   #calPrint .calcell.empty{border:none;}
-  #calPrint .calcell .gd{font-weight:700; font-size:.66rem; color:#5c0d0d;}
-  #calPrint .calcell .td2{font-size:.46rem; color:#9a7a3a;}
-  #calPrint .calcell .ev{display:block; font-size:.46rem; line-height:1.18; color:#7a1414;}
-  #calPrint h3{color:#5c0d0d; font-size:.8rem; margin:8px 0 3px;}
-  #calPrint .daylist{column-count:2; column-gap:14px; font-size:.6rem;}
+  #calPrint .calcell .gd{font-weight:700; font-size:.74rem; color:#5c0d0d;}
+  #calPrint .calcell .td2{font-size:.48rem; color:#9a7a3a;}
+  #calPrint .calcell .ev{display:block; font-size:.48rem; line-height:1.2; color:#7a1414; font-weight:600;}
+  #calPrint h3{color:#5c0d0d; font-size:.82rem; margin:10px 0 4px; border-top:1px solid #e6dcc0; padding-top:6px;}
+  #calPrint .daylist{column-count:3; column-gap:10px; font-size:.56rem; line-height:1.3;}
   #calPrint .daylist .row{display:block; padding:2px 0; border-bottom:1px solid #eee; break-inside:avoid;}
   #calPrint .daylist .dt{font-weight:700; color:#5c0d0d;}
-  #calPrint .daylist .wd{font-weight:400; color:#8a7250;}
-  #calPrint .badspl{font-size:.55rem; padding:0 4px; border:none; background:none; color:#7a1414; box-shadow:none;}
-  #calPrint .ics-day{display:none !important;}
-  @page{ size:A4 portrait; margin:9mm; }
+  #calPrint .daylist .wd{font-weight:400; color:#8a7250; font-size:.94em;}
+  #calPrint .badspl{font-size:.54rem; padding:0 3px; border:none; background:none; color:#7a1414; box-shadow:none;}
+  #calPrint .ics-day, #calPrint button, #calPrint .occ-i{display:none !important;}
+  #calPrint .badspl.occ{cursor:default;}
+  @page{ size:A4 portrait; margin:8mm; }
 }
 /* a slim welcome strip shown to members in place of the pitch */
 .member-hi{display:none; max-width:1280px; margin:0 auto 14px; padding:9px 16px; border-radius:12px;
@@ -928,7 +929,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
         <span class="ta-only">✦ Pro பற்றி</span><span class="en-only">✦ About Pro</span></button>
     </div>
     <div class="hero-trust">
-      <span class="ta-only">🌍 250+ உலக நகரங்கள்</span><span class="en-only">🌍 250+ cities worldwide</span>
+      <span class="ta-only">🌍 90+ உலக நகரங்கள்</span><span class="en-only">🌍 90+ cities worldwide</span>
       <span class="ta-only">📍 உங்கள் ஊரின் உதயத்திலிருந்து</span><span class="en-only">📍 Computed from your local sunrise</span>
       <span class="ta-only">🎯 திருக்கணித துல்லியம்</span><span class="en-only">🎯 Thirukanitha precision</span>
     </div>
@@ -1093,6 +1094,18 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
           <h2>🪔 <span class="ta-only">சிறப்பு நாட்கள் — மாத காலண்டர்</span><span class="en-only">Special Days — month calendar</span></h2>
           <div class="controls" style="margin-bottom:4px">
             <label><span class="ta-only">இடம்</span><span class="en-only">Place</span><select id="sPlace" onchange="gRenderSpecial()"></select></label>
+            <label><span class="ta-only">வகை</span><span class="en-only">Category</span>
+              <select id="calFilter" onchange="renderSpecialDays()">
+                <option value="all">🪔 அனைத்தும் (All)</option>
+                <option value="amavasai">🌑 அமாவாசை (Amavasai)</option>
+                <option value="pournami">🌕 பௌர்ணமி (Pournami)</option>
+                <option value="eclipse">🌘 கிரகணம் (Eclipse)</option>
+                <option value="sashti">🔱 சஷ்டி (Sashti)</option>
+                <option value="sankatahara">🐘 சங்கடஹர சதுர்த்தி (Sankatahara Chaturthi)</option>
+                <option value="pongal">🌾 பொங்கல் (Pongal)</option>
+                <option value="deepavali">🪔 தீபாவளி (Deepavali)</option>
+              </select>
+            </label>
           </div>
           <div class="calnav"><button onclick="calShift(-1)">◀</button><b id="calTitle"></b><button onclick="calShift(1)">▶</button></div>
           <div class="cal-export">
@@ -1190,7 +1203,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
           <li><span class="ck">✓</span> <span class="ta-only">கௌரி நல்ல நேரம் + ராகு காலம்</span><span class="en-only">Gowri nalla neram + Rahu kalam</span></li>
           <li><span class="ck">✓</span> <span class="ta-only">🌙 சந்திராஷ்டமம் — இன்று யாருக்கு என்பது</span><span class="en-only">🌙 Chandrashtamam — which stars are affected today</span></li>
           <li><span class="ck">✓</span> <span class="ta-only">🪔 சிறப்பு நாட்கள் &amp; பண்டிகைகள் — முழு காலண்டர்</span><span class="en-only">🪔 Festivals &amp; special days — full calendar</span></li>
-          <li><span class="ck">✓</span> <span class="ta-only">250+ உலக நகரங்கள்</span><span class="en-only">250+ cities worldwide</span></li>
+          <li><span class="ck">✓</span> <span class="ta-only">90+ உலக நகரங்கள்</span><span class="en-only">90+ cities worldwide</span></li>
           <li class="off"><span class="ck">✕</span> <span class="ta-only">சந்திராஷ்டம தொடக்க &amp; முடிவு நேரம்</span><span class="en-only">Exact chandrashtamam start &amp; end times</span></li>
           <li class="off"><span class="ck">✕</span> <span class="ta-only">தனிப்பட்ட குடும்ப திட்டம்</span><span class="en-only">Personalized Family Plan</span></li>
         </ul>
@@ -1294,7 +1307,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
     <a href="/legal.html#disclaimer"><span class="ta-only">பொறுப்புத் துறப்பு</span><span class="en-only">Disclaimer</span></a>
   </div>
   <div style="font-size:.82rem"><span id="licTag"></span></div>
-  <div class="fine">திருக்கணித முறை · Thirukanitha method · 250+ cities worldwide. © 2026 Ungal Nalla Neram · எல்லாம் வல்ல இறைவன் துணை 🙏</div>
+  <div class="fine">திருக்கணித முறை · Thirukanitha method · 90+ cities worldwide. © 2026 Ungal Nalla Neram · எல்லாம் வல்ல இறைவன் துணை 🙏</div>
 </footer>
 
 <!-- ===== PAYWALL ===== -->
@@ -1455,6 +1468,14 @@ function moonLon(jd){ const d=dnum(jd);
         -0.035*sind(D) -0.031*sind(Mm+Ms) -0.015*sind(2*F-2*D) +0.011*sind(Mm-4*D);
   return rev(lon);
 }
+// Moon's geocentric ecliptic latitude (for eclipse-limit checks near syzygy)
+function moonLat(jd){ const d=dnum(jd);
+  const w=rev(318.0634+0.1643573223*d), i=5.1454, e=0.054900, M=rev(115.3654+13.0649929509*d);
+  const E=keplerE(M,e);
+  const xv=cosd(E)-e, yv=Math.sqrt(1-e*e)*sind(E);
+  const v=atan2d(yv,xv);
+  return asind(sind(i)*sind(v+w));
+}
 
 const ORB={
  me:{N:[48.3313,3.24587e-5],i:[7.0047,5.0e-8],w:[29.1241,1.01444e-5],a:0.387098,e:[0.205635,5.59e-10],M:[168.6562,4.0923344368]},
@@ -1563,30 +1584,108 @@ const DASA_YEARS=[7,20,6,10,7,18,16,19,17];
 const RAHU_SEG=[8,2,7,5,6,4,3], YAMA_SEG=[5,4,3,2,1,7,6], KULI_SEG=[7,6,5,4,3,2,1];
 
 const CITIES=[
+ // ---- India ----
  ["சென்னை (Chennai)",13.0827,80.2707,"Asia/Kolkata"],
- ["யாழ்ப்பாணம் (Jaffna)",9.6615,80.0255,"Asia/Colombo"],["கொழும்பு (Colombo)",6.9271,79.8612,"Asia/Colombo"],
- ["சிங்கப்பூர் (Singapore)",1.3521,103.8198,"Asia/Singapore"],["கோலாலம்பூர் (Kuala Lumpur)",3.1390,101.6869,"Asia/Kuala_Lumpur"],
- ["துபாய் (Dubai)",25.2048,55.2708,"Asia/Dubai"],
- ["டொராண்டோ (Toronto)",43.6532,-79.3832,"America/Toronto"],["மிசிசாகா (Mississauga)",43.5890,-79.6441,"America/Toronto"],
- ["மான்ட்ரியால் (Montreal)",45.5019,-73.5674,"America/Toronto"],["ஒட்டாவா (Ottawa)",45.4215,-75.6972,"America/Toronto"],
- ["வான்கூவர் (Vancouver)",49.2827,-123.1207,"America/Vancouver"],["கால்கரி (Calgary)",51.0447,-114.0719,"America/Edmonton"],
- ["எட்மண்டன் (Edmonton)",53.5461,-113.4938,"America/Edmonton"],["வின்னிபெக் (Winnipeg)",49.8951,-97.1384,"America/Winnipeg"],
- ["நியூயார்க் (New York)",40.7128,-74.0060,"America/New_York"],["நியூ ஜெர்சி (New Jersey)",40.5187,-74.4121,"America/New_York"],
- ["பாஸ்டன் (Boston)",42.3601,-71.0589,"America/New_York"],["வாஷிங்டன் DC (Washington DC)",38.9072,-77.0369,"America/New_York"],
- ["அட்லாண்டா (Atlanta)",33.7490,-84.3880,"America/New_York"],["மியாமி (Miami)",25.7617,-80.1918,"America/New_York"],
- ["டெட்ராய்ட் (Detroit)",42.3314,-83.0458,"America/Detroit"],["சிகாகோ (Chicago)",41.8781,-87.6298,"America/Chicago"],
- ["ஹூஸ்டன் (Houston)",29.7604,-95.3698,"America/Chicago"],["டல்லாஸ் (Dallas)",32.7767,-96.7970,"America/Chicago"],
- ["மினியாபோலிஸ் (Minneapolis)",44.9778,-93.2650,"America/Chicago"],["டென்வர் (Denver)",39.7392,-104.9903,"America/Denver"],
- ["ஃபீனிக்ஸ் (Phoenix)",33.4484,-112.0740,"America/Phoenix"],["லாஸ் ஏஞ்சலஸ் (Los Angeles)",34.0522,-118.2437,"America/Los_Angeles"],
- ["சான் பிரான்சிஸ்கோ (San Francisco)",37.7749,-122.4194,"America/Los_Angeles"],["சியாட்டில் (Seattle)",47.6062,-122.3321,"America/Los_Angeles"],
- ["லண்டன் (London)",51.5074,-0.1278,"Europe/London"],["பாரிஸ் (Paris)",48.8566,2.3522,"Europe/Paris"],
- ["ஜூரிச் (Zurich)",47.3769,8.5417,"Europe/Zurich"],["ஜெனீவா (Geneva)",46.2044,6.1432,"Europe/Zurich"],
- ["பிராங்க்பர்ட் (Frankfurt)",50.1109,8.6821,"Europe/Berlin"],["பெர்லின் (Berlin)",52.5200,13.4050,"Europe/Berlin"],
- ["ஆம்ஸ்டர்டாம் (Amsterdam)",52.3676,4.9041,"Europe/Amsterdam"],["ஓஸ்லோ (Oslo)",59.9139,10.7522,"Europe/Oslo"],
- ["ஸ்டாக்ஹோம் (Stockholm)",59.3293,18.0686,"Europe/Stockholm"],["கோபன்ஹேகன் (Copenhagen)",55.6761,12.5683,"Europe/Copenhagen"],
+ // ---- Canada ----
+ ["அஜாக்ஸ், ஒன்டாரியோ (Ajax, ON)",43.8509,-79.0204,"America/Toronto"],
+ ["பிராம்ப்டன் (Brampton)",43.7315,-79.7624,"America/Toronto"],
+ ["கால்கரி (Calgary)",51.0447,-114.0719,"America/Edmonton"],
+ ["எட்மண்டன் (Edmonton)",53.5461,-113.4938,"America/Edmonton"],
+ ["ஹேமில்டன், ஒன்டாரியோ (Hamilton, ON)",43.2557,-79.8711,"America/Toronto"],
+ ["கிட்ச்னர் (Kitchener)",43.4516,-80.4925,"America/Toronto"],
+ ["லண்டன், ஒன்டாரியோ (London, ON)",42.9849,-81.2453,"America/Toronto"],
+ ["மார்கம் (Markham)",43.8561,-79.3370,"America/Toronto"],
+ ["மிசிசாகா (Mississauga)",43.5890,-79.6441,"America/Toronto"],
+ ["மான்ட்ரியால் (Montreal)",45.5019,-73.5674,"America/Toronto"],
+ ["ஒட்டாவா (Ottawa)",45.4215,-75.6972,"America/Toronto"],
+ ["பிக்கரிங் (Pickering)",43.8384,-79.0868,"America/Toronto"],
+ ["ஸ்கார்பரோ (Scarborough)",43.7764,-79.2318,"America/Toronto"],
+ ["சர்ரி (Surrey)",49.1913,-122.8490,"America/Vancouver"],
+ ["டொராண்டோ (Toronto)",43.6532,-79.3832,"America/Toronto"],
+ ["வான்கூவர் (Vancouver)",49.2827,-123.1207,"America/Vancouver"],
+ ["வான் (Vaughan)",43.8372,-79.5083,"America/Toronto"],
+ ["வின்னிபெக் (Winnipeg)",49.8951,-97.1384,"America/Winnipeg"],
+ // ---- United States ----
+ ["அட்லாண்டா (Atlanta)",33.7490,-84.3880,"America/New_York"],
+ ["ஆஸ்டின் (Austin)",30.2672,-97.7431,"America/Chicago"],
+ ["பாஸ்டன் (Boston)",42.3601,-71.0589,"America/New_York"],
+ ["சார்லட் (Charlotte)",35.2271,-80.8431,"America/New_York"],
+ ["சிகாகோ (Chicago)",41.8781,-87.6298,"America/Chicago"],
+ ["கொலம்பஸ் (Columbus)",39.9612,-82.9988,"America/New_York"],
+ ["டல்லாஸ் (Dallas)",32.7767,-96.7970,"America/Chicago"],
+ ["டென்வர் (Denver)",39.7392,-104.9903,"America/Denver"],
+ ["டெட்ராய்ட் (Detroit)",42.3314,-83.0458,"America/Detroit"],
+ ["ஹூஸ்டன் (Houston)",29.7604,-95.3698,"America/Chicago"],
+ ["லாஸ் வேகாஸ் (Las Vegas)",36.1699,-115.1398,"America/Los_Angeles"],
+ ["லாஸ் ஏஞ்சலஸ் (Los Angeles)",34.0522,-118.2437,"America/Los_Angeles"],
+ ["மியாமி (Miami)",25.7617,-80.1918,"America/New_York"],
+ ["மினியாபோலிஸ் (Minneapolis)",44.9778,-93.2650,"America/Chicago"],
+ ["நியூ ஜெர்சி (New Jersey)",40.5187,-74.4121,"America/New_York"],
+ ["நியூயார்க் (New York)",40.7128,-74.0060,"America/New_York"],
+ ["ஓர்லாண்டோ (Orlando)",28.5383,-81.3792,"America/New_York"],
+ ["பிலடெல்பியா (Philadelphia)",39.9526,-75.1652,"America/New_York"],
+ ["ஃபீனிக்ஸ் (Phoenix)",33.4484,-112.0740,"America/Phoenix"],
+ ["ராலி (Raleigh)",35.7796,-78.6382,"America/New_York"],
+ ["சாக்ரமெண்டோ (Sacramento)",38.5816,-121.4944,"America/Los_Angeles"],
+ ["சான் அன்டோனியோ (San Antonio)",29.4241,-98.4936,"America/Chicago"],
+ ["சான் டியாகோ (San Diego)",32.7157,-117.1611,"America/Los_Angeles"],
+ ["சான் பிரான்சிஸ்கோ (San Francisco)",37.7749,-122.4194,"America/Los_Angeles"],
+ ["சான் ஜோஸ் (San Jose)",37.3382,-121.8863,"America/Los_Angeles"],
+ ["சியாட்டில் (Seattle)",47.6062,-122.3321,"America/Los_Angeles"],
+ ["டாம்பா (Tampa)",27.9506,-82.4572,"America/New_York"],
+ ["வாஷிங்டன் DC (Washington DC)",38.9072,-77.0369,"America/New_York"],
+ // ---- Europe ----
+ ["ஆம்ஸ்டர்டாம் (Amsterdam)",52.3676,4.9041,"Europe/Amsterdam"],
+ ["பெர்லின் (Berlin)",52.5200,13.4050,"Europe/Berlin"],
+ ["பர்மிங்காம் (Birmingham)",52.4862,-1.8904,"Europe/London"],
+ ["பிரஸ்ஸல்ஸ் (Brussels)",50.8503,4.3517,"Europe/Brussels"],
+ ["கோபன்ஹேகன் (Copenhagen)",55.6761,12.5683,"Europe/Copenhagen"],
  ["டப்ளின் (Dublin)",53.3498,-6.2603,"Europe/Dublin"],
- ["ஜோகன்னஸ்பர்க் (Johannesburg)",-26.2041,28.0473,"Africa/Johannesburg"],["டர்பன் (Durban)",-29.8587,31.0218,"Africa/Johannesburg"],
- ["சிட்னி (Sydney)",-33.8688,151.2093,"Australia/Sydney"],["மெல்பேர்ண் (Melbourne)",-37.8136,144.9631,"Australia/Melbourne"],
+ ["பிராங்க்பர்ட் (Frankfurt)",50.1109,8.6821,"Europe/Berlin"],
+ ["ஜெனீவா (Geneva)",46.2044,6.1432,"Europe/Zurich"],
+ ["ஹாம்பர்க் (Hamburg)",53.5511,9.9937,"Europe/Berlin"],
+ ["ஹெல்சிங்கி (Helsinki)",60.1699,24.9384,"Europe/Helsinki"],
+ ["லண்டன் (London)",51.5074,-0.1278,"Europe/London"],
+ ["மான்செஸ்டர் (Manchester)",53.4808,-2.2426,"Europe/London"],
+ ["முனிச் (Munich)",48.1351,11.5820,"Europe/Berlin"],
+ ["ஓஸ்லோ (Oslo)",59.9139,10.7522,"Europe/Oslo"],
+ ["பாரிஸ் (Paris)",48.8566,2.3522,"Europe/Paris"],
+ ["ராட்டர்டாம் (Rotterdam)",51.9244,4.4777,"Europe/Amsterdam"],
+ ["ஸ்டாக்ஹோம் (Stockholm)",59.3293,18.0686,"Europe/Stockholm"],
+ ["வியன்னா (Vienna)",48.2082,16.3738,"Europe/Vienna"],
+ ["ஜூரிச் (Zurich)",47.3769,8.5417,"Europe/Zurich"],
+ // ---- Singapore & Malaysia ----
+ ["இப்போ (Ipoh)",4.5975,101.0901,"Asia/Kuala_Lumpur"],
+ ["ஜொகூர் பாரு (Johor Bahru)",1.4927,103.7414,"Asia/Kuala_Lumpur"],
+ ["கிளாங் (Klang)",3.0333,101.4500,"Asia/Kuala_Lumpur"],
+ ["கோலாலம்பூர் (Kuala Lumpur)",3.1390,101.6869,"Asia/Kuala_Lumpur"],
+ ["பினாங்கு (Penang)",5.4141,100.3288,"Asia/Kuala_Lumpur"],
+ ["செரம்பான் (Seremban)",2.7297,101.9381,"Asia/Kuala_Lumpur"],
+ ["சிங்கப்பூர் (Singapore)",1.3521,103.8198,"Asia/Singapore"],
+ // ---- Australia ----
+ ["அடிலெய்ட் (Adelaide)",-34.9285,138.6007,"Australia/Adelaide"],
+ ["பிரிஸ்பேன் (Brisbane)",-27.4698,153.0251,"Australia/Brisbane"],
+ ["கான்பரா (Canberra)",-35.2809,149.1300,"Australia/Sydney"],
+ ["கோல்ட் கோஸ்ட் (Gold Coast)",-28.0167,153.4000,"Australia/Brisbane"],
+ ["மெல்பேர்ண் (Melbourne)",-37.8136,144.9631,"Australia/Melbourne"],
+ ["பெர்த் (Perth)",-31.9505,115.8605,"Australia/Perth"],
+ ["சிட்னி (Sydney)",-33.8688,151.2093,"Australia/Sydney"],
+ // ---- New Zealand ----
+ ["ஆக்லாந்து (Auckland)",-36.8485,174.7633,"Pacific/Auckland"],
+ ["கிறைஸ்ட்சர்ச் (Christchurch)",-43.5321,172.6362,"Pacific/Auckland"],
+ ["ஹேமில்டன், நியூசிலாந்து (Hamilton, NZ)",-37.7870,175.2793,"Pacific/Auckland"],
+ ["வெலிங்டன் (Wellington)",-41.2865,174.7762,"Pacific/Auckland"],
+ // ---- Gulf ----
+ ["அபுதாபி (Abu Dhabi)",24.4539,54.3773,"Asia/Dubai"],
+ ["டம்மாம் (Dammam)",26.4207,50.0888,"Asia/Riyadh"],
+ ["தோஹா (Doha)",25.2854,51.5310,"Asia/Qatar"],
+ ["துபாய் (Dubai)",25.2048,55.2708,"Asia/Dubai"],
+ ["ஜித்தா (Jeddah)",21.4858,39.1925,"Asia/Riyadh"],
+ ["குவைத் நகர் (Kuwait City)",29.3759,47.9774,"Asia/Kuwait"],
+ ["மனாமா (Manama)",26.2285,50.5860,"Asia/Bahrain"],
+ ["மஸ்கட் (Muscat)",23.5859,58.4059,"Asia/Muscat"],
+ ["ரியாத் (Riyadh)",24.7136,46.6753,"Asia/Riyadh"],
+ ["ஷார்ஜா (Sharjah)",25.3463,55.4209,"Asia/Dubai"],
  ["வேறு இடம் (Custom / other place)",13.0827,80.2707,5.5]
 ];
 const tzFor=(v,d)=>(typeof v==='number')?v:tzOffsetFromName(v,d);
@@ -1601,7 +1700,16 @@ function jdToLocalTime(jd,tz){ // returns {h, dayOffset from ref date handled by
 function fmtCrossTime(jdc,jdRef,tz){ if(jdc==null)return "—";
   const h=jdToLocalTime(jdc,tz);
   const dayDiff=Math.floor(jdc+0.5+tz/24)-Math.floor(jdRef+0.5+tz/24);
-  return fmtTime(h)+(dayDiff>0?" (+நாள்)":"");
+  return fmtTime(h)+(dayDiff>0?" (+நாள்)":dayDiff<0?" (-நாள்)":"");
+}
+/* full calendar date + time (DD-MM-YYYY, h:mm AP) for a jd, local to tz —
+   unambiguous even when a start/end crosses into the previous/next day. */
+function fmtCrossFull(jdc,tz){ if(jdc==null) return "—";
+  const dt=new Date((jdc-2440587.5+tz/24)*86400000);
+  const dNum=dt.getUTCDate(), mNum=dt.getUTCMonth()+1, y=dt.getUTCFullYear();
+  let hh=dt.getUTCHours(), mm=dt.getUTCMinutes();
+  const ap=hh<12?"AM":"PM"; let h12=hh%12; if(h12===0)h12=12;
+  return String(dNum).padStart(2,'0')+"-"+String(mNum).padStart(2,'0')+"-"+y+", "+h12+":"+String(mm).padStart(2,"0")+" "+ap;
 }
 
 function tamilDate(sunSidLon,y,m,d){
@@ -1643,6 +1751,22 @@ function computePanchang(y,m,d,lat,lonE,tz,light){
 //</ENGINE>
 //<PART2>
 /* ============ Special days ============ */
+/* eclipse possibility: at the exact syzygy (new/full moon) near jdSR, an eclipse
+   happens somewhere on Earth if the Moon's ecliptic latitude is within the
+   classical eclipse limits. Geocentric approximation — doesn't confirm local
+   (per-city) visibility, which needs the actual umbral/penumbral path. */
+function eclipseNear(jdSR,targetDeg,limitDeg){
+  const jdSyz=findCross(phaseAt,targetDeg,jdSR);
+  if(jdSyz==null) return false;
+  return Math.abs(moonLat(jdSyz))<limitDeg;
+}
+/* start of the day's tithi (the boundary before jdSR — tithiEnd already
+   gives the boundary after). Same findCross approach, searched backward
+   far enough to bracket even the longest tithi (~26h). */
+function tithiStart(ti,jdSR){ return findCross(phaseAt,(ti*12)%360,jdSR-1.6,48); }
+/* start of the day's nakshatram — mirrors tithiStart; nakshatram lasts up
+   to ~30.5h so search further back than the tithi case. */
+function nakStart(ni,jdSR){ return findCross(moonSidAt,(ni*(360/27))%360,jdSR-1.4,48); }
 function specialsFor(p){
   const ev=[], mi=p.td.monthIdx, ti=p.ti, ni=p.ni, wd=p.wd, tday=p.td.day;
   if(tday===1) ev.push(TMONTH[mi]+" மாத பிறப்பு ("+TMONTH_EN[mi]+" month begins)");
@@ -1655,10 +1779,12 @@ function specialsFor(p){
     if(mi===3) ev.push("ஆடி அமாவாசை — பித்ரு தர்ப்பணம்");
     if(mi===5) ev.push("மகாளய அமாவாசை (Mahalaya)");
     if(mi===9) ev.push("தை அமாவாசை — பித்ரு தர்ப்பணம்");
+    if(eclipseNear(p.jdSR,0,1.6)) ev.push("🌑🌘 சூரிய கிரகணம் (Solar Eclipse)");
   }
   if(ti===14){ ev.push("🌕 பௌர்ணமி (Pournami)");
     if(mi===0) ev.push("சித்ரா பௌர்ணமி (Chitra Pournami)");
     if(mi===4) ev.push("ஆவணி அவிட்டம் / உபாகர்மா (Avani Avittam)");
+    if(eclipseNear(p.jdSR,180,1.2)) ev.push("🌕🌘 சந்திர கிரகணம் (Lunar Eclipse)");
   }
   if(ti===10){ ev.push("🙏 ஏகாதசி — வளர்பிறை (Ekadasi)");
     if(mi===8) ev.push("✨ வைகுண்ட ஏகாதசி (Vaikunta Ekadasi)"); }
@@ -1852,8 +1978,8 @@ function renderPanchang(){
   let h=`<div class="card"><h2>📅 ${d}-${m}-${y} · ${WDAY[p.wd]} <span style="font-size:.8rem;color:#7a5a1e">(${WDAY_EN[p.wd]}) · ${pl.name}</span></h2>
   <div class="grid2">
   ${PIT("தமிழ் தேதி (Tamil date)", p.td.yearName+" வருடம், "+p.td.month+" "+p.td.day, p.td.monthEn+" "+p.td.day)}
-  ${PIT("பட்சம் / திதி (Tithi)", p.paksha+" "+p.tithiName, "till "+fmtCrossTime(p.tithiEnd,p.jdSR,p.tz))}
-  ${PIT("நட்சத்திரம் (Natchathiram)", NAK[p.ni]+" — "+p.padam+"ம் பாதம்", NAK_EN[p.ni]+" · till "+fmtCrossTime(p.nakEnd,p.jdSR,p.tz))}
+  ${PIT("பட்சம் / திதி (Tithi)", p.paksha+" "+p.tithiName, "from "+fmtCrossFull(tithiStart(p.ti,p.jdSR),p.tz)+" · till "+fmtCrossFull(p.tithiEnd,p.tz))}
+  ${PIT("நட்சத்திரம் (Natchathiram)", NAK[p.ni]+" — "+p.padam+"ம் பாதம்", NAK_EN[p.ni]+" · from "+fmtCrossFull(nakStart(p.ni,p.jdSR),p.tz)+" · till "+fmtCrossFull(p.nakEnd,p.tz))}
   ${PIT("யோகம் (Yogam)", YOGA[p.yi],"")}
   ${PIT("கரணம் (Karanam)", p.karana,"")}
   ${PIT("சந்திரன் ராசி (Moon sign)", RASI[p.moonRasi], RASI_EN[p.moonRasi]+" · "+deg(p.moonSid))}
@@ -1896,7 +2022,8 @@ function renderPanchang(){
   ${caRows.map(r=>`<tr class="brow"><td>${NAK[r.t]}</td><td><b>${NAK[r.a]}</b> நட்சத்திரக்காரர்கள்</td><td>${fmtJD(r.sp.start,p.tz)} → ${fmtJD(r.sp.end,p.tz)}</td></tr>`).join('')}
   </table>
   <div class="en" style="font-size:.78rem">ஜன்ம நட்சத்திரத்திலிருந்து 17-வது நட்சத்திரத்தை சந்திரன் கடக்கும் முழு காலம் (~1 நாள்) — இதுவே கூர்மையான சந்திராஷ்டம நேரம். பொதுவான (ராசி அடிப்படை) சந்திராஷ்டமம்: ${RASI[caR.rasi]} ராசி முழுவதற்கும் ~2½ நாள். Whole-star transit of the 17th star from janma natchathiram — the sharp window; the broader rasi-based window covers ${RASI_EN[caR.rasi]} for ~2.5 days.</div>`;
-  if(ev.length) h+=`<h3>🪔 இன்றைய சிறப்பு (Specials)</h3><div>${ev.map(e=>occBadge(e)).join(' ')}</div>`;
+  if(ev.length) h+=`<h3>🪔 இன்றைய சிறப்பு (Specials)</h3><div>${ev.map(e=>occBadge(e)).join(' ')}</div>
+  <button class="btn" style="margin-top:8px" onclick="gotoCalendarDay(${y},${m},${d})">🗓️ ${T('இந்நாளின் தொடக்க/முடிவு நேரம் காலண்டரில் காண்க','View start/end timing for this day in the calendar')} →</button>`;
   h+=`</div>`;
   document.getElementById('panchOut').innerHTML=h;
   renderTodayBanner();
@@ -1935,6 +2062,12 @@ function printCalendar(){
   if(!proExport()) return;                 // Pro feature
   const cp=document.getElementById('calPrint'); if(!cp) return;
   const l=curLang();
+  /* a fridge calendar should show the whole month, not whatever category
+     filter happens to be selected on screen — force "all", print, then
+     restore whatever the user had on screen. */
+  const filterSel=document.getElementById('calFilter');
+  const prevFilter=filterSel?filterSel.value:'all';
+  if(filterSel&&prevFilter!=='all'){ filterSel.value='all'; renderSpecialDays(); }
   let place=''; try{ const s=document.getElementById('sPlace'); place=s?s.options[s.selectedIndex].textContent.replace('📍 ',''):''; }catch(e){}
   const title=(document.getElementById('calTitle')||{}).textContent||'';
   cp.innerHTML=
@@ -1944,7 +2077,9 @@ function printCalendar(){
     '<h3 style="color:#5c0d0d;margin:12px 0 4px">'+((document.getElementById('calListTitle')||{}).textContent||'')+'</h3>'+
     '<div class="daylist">'+(document.getElementById('splOut')||{}).innerHTML+'</div>'+
     '<div style="text-align:center;font-size:.7rem;color:#8a7250;margin-top:14px">'+
-      (l==='en'?'Thirukanitha method · nallaneram.app':'திருக்கணித முறை · nallaneram.app')+'</div>';
+      (l==='en'?'Thirukanitha method · www.yournallaneram.com':'திருக்கணித முறை · www.yournallaneram.com')+'</div>';
+  const restore=()=>{ if(filterSel&&prevFilter!=='all'){ filterSel.value=prevFilter; renderSpecialDays(); } };
+  window.addEventListener('afterprint',restore,{once:true});
   toast(l==='en'?'Opening print… choose "Save as PDF"':'அச்சு திறக்கிறது… "Save as PDF" தேர்வு செய்யவும்');
   setTimeout(()=>window.print(), 250);
 }
@@ -2177,6 +2312,12 @@ const NN_OCCASIONS=[
  { key:'pradosham', match:['Pradosham','பிரதோஷ'],
    en:{name:'Pradosham', about:'The twilight window on the thirteenth lunar day (trayodashi), sacred to Lord Shiva. Tradition holds that at this hour Shiva danced the Ananda Thandava between the horns of Nandi and blessed the devas.', worship:'Devotees visit a Shiva temple in the evening — about 1.5 hours before sunset — light a lamp, and pray during the pradosha kalam; circumambulating Nandi and offering abhishekam are common. Light fasting until the evening puja, as health allows.', temples:'Any Shiva temple with a prominent Nandi; the pradosha kalam worship is the same everywhere.'},
    ta:{name:'பிரதோஷம்', about:'திரயோதசி திதியில் வரும் மாலை நேரம் — சிவபெருமானுக்கு உகந்த நேரம். நந்தியின் கொம்புகளுக்கு இடையே சிவன் ஆனந்த தாண்டவம் ஆடி தேவர்களுக்கு அருள் புரிந்ததாக ஐதீகம்.', worship:'மாலையில் (அஸ்தமனத்திற்கு ~1½ மணி முன்) சிவன் கோயிலுக்குச் சென்று, விளக்கேற்றி, பிரதோஷ காலத்தில் வழிபடுவர்; நந்தி வலம், அபிஷேகம் சிறப்பு. உடல்நலம் அனுமதிக்கும் வரை லேசான விரதம்.', temples:'நந்தி சிறப்புடன் உள்ள சிவன் கோயில்கள்; பிரதோஷ கால வழிபாடு எங்கும் ஒன்றே.'} },
+ { key:'solareclipse', match:['Solar Eclipse','சூரிய கிரகணம்'],
+   en:{name:'Solar Eclipse (Surya Grahanam)', about:'A solar eclipse occurs at Amavasai when the Moon passes close enough to the Sun–Earth line to block sunlight for part of the world — visible only from certain regions, not everywhere at once. Tradition treats the grahana kaalam (eclipse period) as spiritually potent but inauspicious for routine activity, favouring prayer and restraint over new beginnings.', worship:'Many avoid eating, drinking or starting new tasks during the grahana kaalam, spending it in mantra japa instead. Cooked food and water are traditionally discarded or protected with a blade of darbha grass; pregnant women are advised to stay indoors and avoid sharp objects or stitching. Temples close the sanctum for the eclipse and reopen it with a purification abhishekam afterward; a bath once the eclipse ends is customary for everyone.', temples:'Observed nationwide; closure timings vary by temple. This app flags that a solar eclipse is occurring worldwide near today\'s Amavasai — check a dedicated eclipse tracker to confirm whether it is actually visible from your city, and at what local time.'},
+   ta:{name:'சூரிய கிரகணம்', about:'அமாவாசையன்று சந்திரன் சூரியனுக்கும் பூமிக்கும் இடையே நெருக்கமாக வரும்போது ஏற்படும் நிகழ்வு சூரிய கிரகணம் — இது உலகின் சில பகுதிகளில் மட்டுமே ஒரே நேரத்தில் தெரியும். கிரகண காலம் ஆன்மீக ரீதியில் முக்கியமானதாகக் கருதப்பட்டாலும், வழக்கமான செயல்பாடுகளுக்கு உகந்த நேரமல்ல — புதிய தொடக்கங்களுக்குப் பதிலாக ஜபம், பிரார்த்தனைக்கு உரியது.', worship:'கிரகண காலத்தில் பலர் உணவு/நீர் தவிர்த்து, புதிய காரியங்களைத் தள்ளிப்போட்டு, மந்திர ஜபத்தில் ஈடுபடுவர். சமைத்த உணவையும் நீரையும் அப்புறப்படுத்துவது அல்லது தர்ப்பைப் புல் இட்டு பாதுகாப்பது வழக்கம்; கர்ப்பிணிகள் வீட்டை விட்டு வெளியே செல்லாமல், கூரான பொருட்களைத் தொடாமல் இருக்குமாறு அறிவுறுத்தப்படுவர். கோயில் கருவறை கிரகண காலத்திற்கு மூடப்பட்டு, முடிந்தபின் சிறப்பு அபிஷேகத்துடன் மீண்டும் திறக்கப்படும்; கிரகணம் முடிந்தபின் அனைவரும் நீராடுவது வழக்கம்.', temples:'நாடு முழுவதும் அனுசரிக்கப்படுகிறது; மூடல் நேரம் கோயிலுக்கு கோயில் மாறுபடும். இன்றைய அமாவாசையை ஒட்டி உலகளவில் சூரிய கிரகணம் நிகழ்கிறது என்பதை இந்த ஆப் காட்டுகிறது — இது உங்கள் ஊரில் உண்மையில் தெரியுமா, எந்த நேரத்தில் என்பதை உறுதிசெய்ய ஒரு கிரகண வரைபடத்தைப் பார்க்கவும்.'} },
+ { key:'lunareclipse', match:['Lunar Eclipse','சந்திர கிரகணம்'],
+   en:{name:'Lunar Eclipse (Chandra Grahanam)', about:'A lunar eclipse occurs at Pournami when the Moon passes through the Earth\'s shadow — visible from wherever the Moon is above the horizon at the time, so not from every city. As with the solar eclipse, the grahana kaalam is held to be a time for prayer and restraint rather than routine activity or celebration.', worship:'The same eclipse-time observances as Surya Grahanam are followed — avoiding food and new undertakings during the grahana kaalam, spending it in mantra japa, protecting stored food and water, and bathing once the eclipse ends. Pregnant women are traditionally advised the same care as for a solar eclipse.', temples:'Observed nationwide; many temples close the sanctum through the eclipse and reopen it with purification once it ends. This app flags that a lunar eclipse is occurring worldwide near today\'s Pournami — check a dedicated eclipse tracker to confirm whether the Moon is above your horizon at the time, and the exact local timings.'},
+   ta:{name:'சந்திர கிரகணம்', about:'பௌர்ணமியன்று சந்திரன் பூமியின் நிழல் வழியே செல்லும்போது ஏற்படும் நிகழ்வு சந்திர கிரகணம் — அந்நேரத்தில் சந்திரன் தொடுவானுக்கு மேல் இருக்கும் ஊர்களில் மட்டுமே தெரியும், எல்லா ஊர்களிலும் அல்ல. சூரிய கிரகணம் போலவே, கிரகண காலம் வழக்கமான செயல்பாடுகளுக்கும் கொண்டாட்டத்திற்கும் பதிலாக ஜபம், பிரார்த்தனைக்கு உரிய நேரமாகக் கருதப்படுகிறது.', worship:'சூரிய கிரகணத்திற்கான அதே அனுசரிப்புகள் பின்பற்றப்படும் — கிரகண காலத்தில் உணவு/புதிய காரியங்களைத் தவிர்த்து மந்திர ஜபம், சேமித்த உணவு/நீரைப் பாதுகாத்தல், கிரகணம் முடிந்தபின் நீராடுதல். கர்ப்பிணிகளுக்கு சூரிய கிரகணத்திற்கான அதே கவனிப்பு பரிந்துரைக்கப்படுகிறது.', temples:'நாடு முழுவதும் அனுசரிக்கப்படுகிறது; பல கோயில்கள் கிரகண காலத்திற்கு கருவறையை மூடி, முடிந்தபின் சுத்திகரிப்புடன் மீண்டும் திறக்கும். இன்றைய பௌர்ணமியை ஒட்டி உலகளவில் சந்திர கிரகணம் நிகழ்கிறது என்பதை இந்த ஆப் காட்டுகிறது — அந்நேரத்தில் சந்திரன் உங்கள் ஊரில் தொடுவானுக்கு மேல் உள்ளதா, சரியான நேரம் என்ன என்பதை உறுதிசெய்ய ஒரு கிரகண வரைபடத்தைப் பார்க்கவும்.'} },
  { key:'amavasai', match:['Amavasai','அமாவாசை'],
    en:{name:'Amavasai', about:'The new-moon day, traditionally set aside to remember and honour ancestors (pitru). Aadi, Thai and Mahalaya Amavasai are especially significant.', worship:'Devotees perform tarpanam (water oblations) for ancestors, offer charity and food, and visit rivers or temples — a day of remembrance and gratitude.', temples:'River ghats and Rameswaram for tarpanam draw the largest gatherings.'},
    ta:{name:'அமாவாசை', about:'புது நிலா நாள் — முன்னோர்களை (பித்ரு) நினைவுகூர்ந்து மரியாதை செலுத்தும் நாள். ஆடி, தை, மகாளய அமாவாசை மிகச் சிறப்பு.', worship:'முன்னோர்களுக்கு தர்ப்பணம், தானம், அன்னதானம்; ஆற்று நீராடல், கோயில் வழிபாடு — நினைவும் நன்றியும்.', temples:'தர்ப்பணத்திற்கு ஆற்றங்கரைகள், ராமேஸ்வரம்.'} },
@@ -2272,8 +2413,54 @@ function gotoDate(y,m,d){
   document.getElementById('pDate').value=y+"-"+String(m).padStart(2,'0')+"-"+String(d).padStart(2,'0');
   showTab(0); renderPanchang(); window.scrollTo({top:0,behavior:'smooth'});
 }
+/* clicking a calendar cell used to jump straight to the Panchangam tab —
+   now it just scrolls to that day's detail row (start/end times, badges)
+   further down in the same Festivals tab; the row's own "View" button
+   is what actually navigates to the Panchangam. */
+function focusDay(d){
+  const el=document.getElementById('spl-day-'+d); if(!el) return;
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+  const prev=el.style.backgroundColor;
+  el.style.transition='background-color .3s';
+  el.style.backgroundColor='rgba(255,180,90,.35)';
+  setTimeout(()=>{ el.style.backgroundColor=prev; },1200);
+}
+/* jump from a Panchangam-tab special-day badge to that day's row in the
+   Festivals calendar, where the location-specific start/end times live —
+   single source of truth for timing, instead of duplicating it here. */
+function gotoCalendarDay(y,m,d){
+  const sSel=document.getElementById('sPlace'), pSel=document.getElementById('pPlace');
+  if(sSel&&pSel) sSel.value=pSel.value;
+  calY=y; calM=m-1;
+  showTab(1);
+  renderSpecialDays();
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(()=>focusDay(d),350);
+}
+/* Category filter for the special-days calendar — each entry matches by
+   substring against the (bilingual) event text already produced by specialsFor. */
+const CAL_CATEGORIES={
+  amavasai:'அமாவாசை', pournami:'பௌர்ணமி', eclipse:'கிரகணம்',
+  sashti:'சஷ்டி', sankatahara:'சங்கடஹர', pongal:'பொங்கல்', deepavali:'தீபாவளி'
+};
+function calFilterEv(ev,catKey){
+  if(!catKey||catKey==='all') return ev;
+  const needle=CAL_CATEGORIES[catKey]; if(!needle) return ev;
+  return ev.filter(e=>e.indexOf(needle)>=0);
+}
+/* start/end time for the day's tithi, formatted for display — used for
+   Amavasai/Pournami (and, on eclipse days, this end boundary IS the exact
+   new/full moon — i.e. the eclipse — since that's how the tithi is defined,
+   so no separate "eclipse time" needs computing). Location-specific. */
+function tithiTimeRange(y,m,d,pl){
+  const tzd=tzFor(pl.tzr!==undefined?pl.tzr:pl.tz,new Date(y,m-1,d,12));
+  const p=computePanchang(y,m,d,pl.lat,pl.lon,tzd,false);
+  const start=tithiStart(p.ti,p.jdSR);
+  return {from:fmtCrossFull(start,tzd), to:fmtCrossFull(p.tithiEnd,tzd)};
+}
 function renderSpecialDays(){
   const pl=getPlace('sPlace');
+  const catKey=document.getElementById('calFilter')?document.getElementById('calFilter').value:'all';
   const now=new Date();
   const first=new Date(calY,calM,1), ndays=new Date(calY,calM+1,0).getDate();
   document.getElementById('calTitle').textContent=MN_EN[calM]+" "+calY;
@@ -2283,19 +2470,55 @@ function renderSpecialDays(){
   for(let d=1;d<=ndays;d++){
     const tzd=tzFor(pl.tzr!==undefined?pl.tzr:pl.tz,new Date(calY,calM,d,12));
     const p=computePanchang(calY,calM+1,d,pl.lat,pl.lon,tzd,true);
-    const ev=specialsFor(p);
+    const evAll=specialsFor(p), ev=calFilterEv(evAll,catKey);
     const isToday=(calY===now.getFullYear()&&calM===now.getMonth()&&d===now.getDate());
     const short=ev.slice(0,3).map(e=>`<span class="ev">${e.split('(')[0].trim()}</span>`).join('');
-    h+=`<div class="calcell${isToday?' today':''}" onclick="gotoDate(${calY},${calM+1},${d})">
+    h+=`<div class="calcell${isToday?' today':''}"${ev.length?` onclick="focusDay(${d})"`:''}>
       <span class="gd">${d}</span> <span class="td2">${p.td.month.slice(0,4)} ${p.td.day}</span>${short}${ev.length>3?'<span class="ev">…</span>':''}</div>`;
-    if(ev.length) monthEvents.push({d,p,ev});
+    if(ev.length) monthEvents.push({d,ev,evAll,td:p.td});
   }
   document.getElementById('calGrid').innerHTML=h;
   document.getElementById('calListTitle').textContent="🪔 "+MN_EN[calM]+" "+calY+" — சிறப்பு நாட்கள் விவரம்";
-  document.getElementById('splOut').innerHTML=monthEvents.map(o=>
-    `<div class="row"><div class="dt">${String(o.d).padStart(2,'0')}-${String(calM+1).padStart(2,'0')}-${calY}<div class="wd">${WDAY[o.p.wd]} · ${o.p.td.month} ${o.p.td.day}</div>
-       <button class="ics-day" onclick="addDayICS(${calY},${calM+1},${o.d})" title="${T('இந்நாளை காலண்டரில் சேர்','Add this day to calendar')}">🗓️ ${T('சேர்','Add')}</button></div>
-     <div>${o.ev.map(e=>occBadge(e)).join(' ')}</div></div>`).join('')||"—";
+  if(monthEvents.length){
+    document.getElementById('splOut').innerHTML=monthEvents.map(o=>{
+      let timeLine='';
+      const hasAmavasai=o.evAll.some(e=>e.indexOf('அமாவாசை')>=0), hasPournami=o.evAll.some(e=>e.indexOf('பௌர்ணமி')>=0);
+      const hasEclipse=o.evAll.some(e=>e.indexOf('கிரகணம்')>=0);
+      if(hasAmavasai||hasPournami){
+        const tr=tithiTimeRange(calY,calM+1,o.d,pl);
+        const endLabel=hasEclipse?T('திதி முடிவு / கிரகண உச்சம்','Tithi ends / eclipse peak'):T('திதி முடிவு','Tithi ends');
+        timeLine+=`<div class="wd">⏱ ${T('திதி தொடக்கம்','Tithi starts')}: <b>${tr.from}</b> · ${endLabel}: <b>${tr.to}</b></div>`;
+      }
+      return `<div class="row" id="spl-day-${o.d}"><div class="dt">${String(o.d).padStart(2,'0')}-${String(calM+1).padStart(2,'0')}-${calY}<div class="wd">${WDAY[new Date(calY,calM,o.d).getDay()]} · ${o.td.month} ${o.td.day}</div>${timeLine}
+         <button class="ics-day" onclick="addDayICS(${calY},${calM+1},${o.d})" title="${T('இந்நாளை காலண்டரில் சேர்','Add this day to calendar')}">🗓️ ${T('சேர்','Add')}</button>
+         <button class="btn" style="margin-top:4px" onclick="gotoDate(${calY},${calM+1},${o.d})">📅 ${T('பஞ்சாங்கத்தில் காண்க','View in Panchangam')} →</button></div>
+       <div>${o.ev.map(e=>occBadge(e)).join(' ')}</div></div>`;
+    }).join('');
+  } else if(catKey!=='all'){
+    const nxt=nextOccurrenceDay(catKey,calY,calM+1,1,pl,400);
+    document.getElementById('splOut').innerHTML=nxt?
+      `<div class="row"><div class="dt">${T('இந்த மாதம் இல்லை','None this month')}</div>
+        <div>${T('அடுத்தது','Next')}: <b>${String(nxt.d).padStart(2,'0')}-${String(nxt.m).padStart(2,'0')}-${nxt.y}</b>
+        <button class="btn" style="margin-left:8px" onclick="gotoDate(${nxt.y},${nxt.m},${nxt.d})">${T('காண்க','View')} →</button></div></div>`
+      : `<div class="row"><div>${T('அருகிலுள்ள 400 நாட்களில் இல்லை','None found in the next 400 days')}</div></div>`;
+  } else {
+    document.getElementById('splOut').innerHTML="—";
+  }
+}
+/* day-by-day scan for the next date (from y/m/d onward, inclusive) whose
+   specialsFor output matches the given category — used when the filtered
+   calendar has no matches in the currently displayed month. */
+function nextOccurrenceDay(catKey,y,m,d,pl,maxDays){
+  maxDays=maxDays||400;
+  let dt=new Date(y,m-1,d);
+  for(let i=0;i<maxDays;i++){
+    const cy=dt.getFullYear(), cm=dt.getMonth()+1, cd=dt.getDate();
+    const tzd=tzFor(pl.tzr!==undefined?pl.tzr:pl.tz,new Date(cy,cm-1,cd,12));
+    const p=computePanchang(cy,cm,cd,pl.lat,pl.lon,tzd,true);
+    if(calFilterEv(specialsFor(p),catKey).length) return {y:cy,m:cm,d:cd};
+    dt.setDate(dt.getDate()+1);
+  }
+  return null;
 }
 
 /* ============ Registration profiles & daily personal summary ============ */
