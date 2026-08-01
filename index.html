@@ -3364,17 +3364,16 @@ function watchChandra(){
    ============================================================ */
 const PL_STEPS=[
  {
-  ta:{t:'ஒவ்வொருவரின் பிறப்பு விவரம்',s:'பிறந்த தேதி, நேரம், ஊர் — ஒருமுறை மட்டும்',
-      note:'இந்த மூன்று விவரங்கள்தான் அவரவர் ஜாதகத்தின் அடிப்படை.'},
-  en:{t:"Enter each person's birth details",s:'Date, time and city of birth — just once',
-      note:'These three details are what each personal chart is built from.'},
+  ta:{t:'ஒவ்வொருவரின் ராசி & நட்சத்திரம்',s:'ராசியும் நட்சத்திரமும் — ஒருமுறை மட்டும்',
+      note:'பிறந்த தேதி, நேரம் தேவையில்லை — இவை இரண்டும் தெரிந்தால் போதும்.'},
+  en:{t:"Enter each person's Raasi & Nakshatram",s:'Just their moon sign and birth star — once',
+      note:'No date or time of birth needed — this is all it takes.'},
   body:l=>`<div class="mock"><div class="mock-row">
     <div class="mock-field"><div class="mf-l">${l==='en'?'Name':'பெயர்'}</div><div class="mf-v">Meena</div></div>
-    <div class="mock-field"><div class="mf-l">${l==='en'?'Date of birth':'பிறந்த தேதி'}</div><div class="mf-v">14-06-1985</div></div></div>
+    <div class="mock-field"><div class="mf-l">${l==='en'?'Raasi':'ராசி'}</div><div class="mf-v">${l==='en'?'Rishabam':'ரிஷபம்'}</div></div></div>
     <div class="mock-row" style="margin-top:10px">
-    <div class="mock-field"><div class="mf-l">${l==='en'?'Time of birth':'பிறந்த நேரம்'}</div><div class="mf-v">04:35 AM</div></div>
-    <div class="mock-field"><div class="mf-l">${l==='en'?'City of birth':'பிறந்த ஊர்'}</div><div class="mf-v cursor-blink">Madurai</div></div></div>
-    <div style="margin-top:14px"><span class="fl-chip" style="font-size:.8rem">🔯 ${l==='en'?'Chart calculated: <b>Rohini</b> · Rishabam':'கணிக்கப்பட்டது: <b>ரோகிணி</b> · ரிஷபம்'}</span></div></div>`
+    <div class="mock-field"><div class="mf-l">${l==='en'?'Nakshatram':'நட்சத்திரம்'}</div><div class="mf-v cursor-blink">${l==='en'?'Rohini':'ரோகிணி'}</div></div></div>
+    <div style="margin-top:14px"><span class="fl-chip" style="font-size:.8rem">✅ ${l==='en'?'Ready — today’s reading for <b>Rohini</b> · Rishabam':'தயார் — <b>ரோகிணி</b> · ரிஷபத்திற்கான இன்றைய பலன்'}</span></div></div>`
  },
  {
   ta:{t:'குடும்பம் முழுவதையும் சேருங்கள்',s:'எத்தனை பேரையும் — அப்பா, அம்மா, பிள்ளைகள்',
