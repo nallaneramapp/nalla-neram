@@ -1165,7 +1165,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
             <span class="ta-only">ஒவ்வொருவரின் <b>பிறந்த தேதி, நேரம், ஊர்</b> ஒருமுறை பதிவு செய்யுங்கள் — தினமும் திறக்கும்போது அவரவருக்கான தனிப்பட்ட பலன் (தாராபலம், சந்திராஷ்டமம், தசை-புக்தி, அன்றைய சிறப்பு) தானாகக் காட்டப்படும்.</span>
             <span class="en-only">Register each person's <b>date, time and city of birth</b> once — every time you open the app, each of them gets their own reading (tara balam, chandrashtama, dasa-bhukti and the day's specials) calculated automatically.</span>
           </p>
-          <div class="controls" style="margin-bottom:8px">
+          <div class="controls" id="rModeToggle" style="margin-bottom:8px;display:none">
             <label style="flex-direction:row;align-items:center;gap:6px">
               <input type="radio" name="rMode" id="rModeDob" value="dob" onchange="rModeSwitch()">
               <span class="ta-only">முழு பிறப்பு விவரம் (தேதி/நேரம்/ஊர்)</span><span class="en-only">Full birth details (date/time/city)</span>
@@ -3545,6 +3545,7 @@ async function refreshAccountUI(){
   await refreshPro();
   renderAuthBtn();
   applyProState();
+  applyAdminUI();
   try{ renderTodayBanner(); renderPanchang(); }catch(e){}
   renderChandraOverview();
   const n=currentTab();
@@ -3601,6 +3602,26 @@ function rModeSwitch(){
   const star=document.getElementById('rModeStar').checked;
   document.getElementById('rDobFields').style.display=star?'none':'contents';
   document.getElementById('rStarFields').style.display=star?'contents':'none';
+}
+/* DOB / time-of-birth entry is admin-only — everyone else only ever sees raasi+nakshatram. */
+const ADMIN_EMAILS=['parthiban.scmp@gmail.com','nallaneramapp@gmail.com'];
+function isAdminUser(){
+  try{
+    if(!useServer() || !window.NN.nnSignedIn()) return false;
+    const u=window.NN.nnUser();
+    const email=((u&&u.primaryEmailAddress&&u.primaryEmailAddress.emailAddress)||'').toLowerCase();
+    return ADMIN_EMAILS.includes(email);
+  }catch(e){ return false; }
+}
+function applyAdminUI(){
+  const admin=isAdminUser();
+  const toggle=document.getElementById('rModeToggle');
+  if(toggle) toggle.style.display=admin?'flex':'none';
+  if(!admin){
+    const starRadio=document.getElementById('rModeStar');
+    if(starRadio) starRadio.checked=true;
+    rModeSwitch();
+  }
 }
 function addProfile(){
   const name=document.getElementById('rName').value.trim();
@@ -4077,6 +4098,7 @@ function init(){
   if(rRasiSel) RASI.forEach((r,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=r+' ('+RASI_EN[i]+')'; rRasiSel.appendChild(o); });
   const rNakSel=document.getElementById('rNak');
   if(rNakSel) NAK.forEach((n,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=n+' ('+NAK_EN[i]+')'; rNakSel.appendChild(o); });
+  applyAdminUI();
   /* changing the city re-renders the panchangam immediately */
   const pSel=document.getElementById('pPlace');
   if(pSel) pSel.addEventListener('change',()=>{ try{ renderTodayBanner(); renderPanchang(); }catch(e){} renderChandraOverview(); });
