@@ -1130,17 +1130,6 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
           <div class="controls" style="margin-top:14px">
             <label><span class="ta-only">பெயர்</span><span class="en-only">Name</span><input type="text" id="eName" placeholder="e.g. PD"></label>
             <label><span class="ta-only">மின்னஞ்சல்</span><span class="en-only">Email</span><input type="email" id="eEmail" placeholder="you@example.com"></label>
-            <label><span class="ta-only">தொலைபேசி (விருப்பம்)</span><span class="en-only">Phone (optional)</span><input type="tel" id="ePhone" placeholder="+1 …"></label>
-          </div>
-          <div class="controls" style="margin-top:10px">
-            <label><span class="ta-only">பிறந்த தேதி</span><span class="en-only">Date of birth</span><input type="date" id="jDate"></label>
-            <label><span class="ta-only">பிறந்த நேரம்</span><span class="en-only">Time of birth</span><input type="time" id="jTime" value="06:00"></label>
-            <label><span class="ta-only">பிறந்த ஊர்</span><span class="en-only">City of birth</span><select id="jPlace" onchange="placeChanged()"></select></label>
-          </div>
-          <div class="controls" id="customPlace" style="display:none; margin-top:8px">
-            <label>Latitude<input type="number" id="jLat" step="0.0001" value="13.0827" style="width:110px"></label>
-            <label>Longitude<input type="number" id="jLon" step="0.0001" value="80.2707" style="width:110px"></label>
-            <label>UTC offset (hrs)<input type="number" id="jTz" step="0.25" value="5.5" style="width:90px"></label>
           </div>
           <div style="margin-top:12px">
             <label style="display:block;font-size:.8rem;font-weight:700;color:var(--maroon);margin-bottom:4px">
@@ -1979,8 +1968,6 @@ function nextCAStar(janmaNak,jdNow){
   const end=findCross(moonSidAt,(((s+1)%27)*NAKW)%360,start+0.02,40);
   return {star:s, span:{start,end}, now:false};
 }
-function placeChanged(){ const sel=document.getElementById('jPlace');
-  document.getElementById('customPlace').style.display = (+sel.value===CITIES.length-1)?'flex':'none'; }
 const PIT=(l,v,en)=>`<div class="pitem"><div class="lbl">${l}</div><div class="val">${v}</div>${en?`<div class="en">${en}</div>`:''}</div>`;
 
 /* ============ Panchangam view ============ */
@@ -3687,27 +3674,23 @@ function enquiryRef(){
 function submitEnquiry(){
   const out=document.getElementById('enqOut'); if(!out) return;
   const v=id=>{const e=document.getElementById(id); return e?e.value.trim():'';};
-  const name=v('eName'), email=v('eEmail'), dob=v('jDate'), tob=v('jTime');
+  const name=v('eName'), email=v('eEmail');
   const consent=document.getElementById('eConsent');
   const err=m=>{ out.innerHTML='<div class="enq-err">⚠️ '+m+'</div>'; };
   if(!name)  return err(T('பெயரை உள்ளிடவும்.','Please enter your name.'));
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
                 return err(T('சரியான மின்னஞ்சல் முகவரியை உள்ளிடவும்.','Please enter a valid email address.'));
-  if(!dob)   return err(T('பிறந்த தேதி தேவை.','Date of birth is required.'));
-  if(!tob)   return err(T('பிறந்த நேரம் தேவை.','Time of birth is required.'));
   if(consent && !consent.checked)
                 return err(T('தொடர்வதற்கு முன் ஒப்புதலை அளிக்கவும்.','Please tick the acknowledgement to continue.'));
 
-  const sel=document.getElementById('jPlace');
-  const place=sel?sel.options[sel.selectedIndex].textContent:'';
   const ref=enquiryRef();
   if(useServer()){
-    window.NN.nnSubmitEnquiry({ref,name,email,phone:v('ePhone'),dob,tob,city_label:place,message:v('eMsg'),consent:true})
+    window.NN.nnSubmitEnquiry({ref,name,email,message:v('eMsg'),consent:true})
       .catch(e=>console.error('enquiry submit',e));
   } else {
     /* DEMO: stored locally so the model works before the backend is live. */
     try{ const all=JSON.parse(localStorage.getItem('nnEnquiries')||'[]');
-         all.push({ref,name,email,phone:v('ePhone'),dob,tob,place,msg:v('eMsg'),at:new Date().toISOString()});
+         all.push({ref,name,email,msg:v('eMsg'),at:new Date().toISOString()});
          localStorage.setItem('nnEnquiries',JSON.stringify(all)); }catch(e){}
   }
 
@@ -3721,17 +3704,11 @@ function submitEnquiry(){
   out.scrollIntoView({behavior:'smooth',block:'nearest'});
   toast(T('✉ ஆலோசனை கோரிக்கை அனுப்பப்பட்டது','✉ Consultation request sent'));
 }
-/* family-plan button → prefill the enquiry with that person's birth details */
+/* family-plan button → prefill the enquiry with that person's name */
 function viewJathagam(i){
   const pr=loadProfiles()[i]; if(!pr) return;
   const set=(id,val)=>{const e=document.getElementById(id); if(e) e.value=val;};
-  set('eName',pr.name); set('jDate',pr.dv); set('jTime',pr.tv);
-  const sel=document.getElementById('jPlace');
-  if(sel){ const ci=CITIES.findIndex(c=>c[0]===pr.pn);
-    if(ci>=0&&ci<CITIES.length-1) sel.value=ci;
-    else { sel.value=CITIES.length-1; set('jLat',pr.lat); set('jLon',pr.lon); set('jTz',pr.tz); }
-    placeChanged();
-  }
+  set('eName',pr.name);
   showTab(2);
   const t=document.getElementById('tab2'); if(t) t.scrollIntoView({behavior:'smooth',block:'start'});
   toast(T('விவரங்கள் நிரப்பப்பட்டன — ஆலோசனை கோரலாம்','Details prefilled — send your request'));
@@ -4084,13 +4061,13 @@ function licWin(key,mode,uses){
 function init(){
   let l='ta'; try{ l=localStorage.getItem('nnLang')||'ta'; }catch(e){}
   setLang(l);
-  for(const id of ['pPlace','sPlace','jPlace','rPlace','fPlace']){
+  for(const id of ['pPlace','sPlace','rPlace','fPlace']){
     const sel=document.getElementById(id); if(!sel) continue;
     if(id==='pPlace'||id==='sPlace'||id==='fPlace'){
       const a=document.createElement('option'); a.value="auto";
       a.textContent=T("📍 தானியங்கி இடம் (Auto-detect)","📍 Auto-detect my location"); sel.appendChild(a);
     }
-    CITIES.forEach((c,i)=>{ if(id!=='jPlace'&&i===CITIES.length-1) return;
+    CITIES.forEach((c,i)=>{ if(i===CITIES.length-1) return;
       const o=document.createElement('option'); o.value=i; o.textContent=c[0]; sel.appendChild(o); });
   }
   const rRasiSel=document.getElementById('rRasi');
