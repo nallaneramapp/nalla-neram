@@ -33,8 +33,11 @@ create table if not exists public.profiles (
   id          uuid primary key default gen_random_uuid(),
   user_id     text not null,               -- Clerk user id
   name        text not null,
-  dob         date not null,               -- date of birth
-  tob         time not null,               -- time of birth
+  mode        text default 'dob',          -- 'dob' = birth details; 'star' = raasi+nakshatram only
+  nak         int,                          -- janma nakshatram 0-26 (star mode)
+  rasi        int,                          -- janma raasi 0-11 (star mode)
+  dob         date,                         -- date of birth (null in star mode)
+  tob         time,                         -- time of birth (null in star mode)
   city_label  text,                        -- e.g. "சென்னை (Chennai)"
   lat         double precision,
   lon         double precision,
@@ -42,6 +45,12 @@ create table if not exists public.profiles (
   tz_name     text,                        -- IANA zone, e.g. Asia/Kolkata
   created_at  timestamptz not null default now()
 );
+-- If the table already exists from an earlier deploy, upgrade it:
+alter table public.profiles alter column dob drop not null;
+alter table public.profiles alter column tob drop not null;
+alter table public.profiles add column if not exists mode text default 'dob';
+alter table public.profiles add column if not exists nak int;
+alter table public.profiles add column if not exists rasi int;
 create index if not exists profiles_user_idx on public.profiles(user_id);
 
 -- ---------- 3. JATHAGAM ENQUIRIES -------------------------------------------
