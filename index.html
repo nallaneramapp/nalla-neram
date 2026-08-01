@@ -1167,22 +1167,22 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
           </p>
           <div class="controls" style="margin-bottom:8px">
             <label style="flex-direction:row;align-items:center;gap:6px">
-              <input type="radio" name="rMode" id="rModeDob" value="dob" checked onchange="rModeSwitch()">
+              <input type="radio" name="rMode" id="rModeDob" value="dob" onchange="rModeSwitch()">
               <span class="ta-only">முழு பிறப்பு விவரம் (தேதி/நேரம்/ஊர்)</span><span class="en-only">Full birth details (date/time/city)</span>
             </label>
             <label style="flex-direction:row;align-items:center;gap:6px">
-              <input type="radio" name="rMode" id="rModeStar" value="star" onchange="rModeSwitch()">
+              <input type="radio" name="rMode" id="rModeStar" value="star" checked onchange="rModeSwitch()">
               <span class="ta-only">ராசி & நட்சத்திரம் மட்டும்</span><span class="en-only">Raasi & Nakshatram only</span>
             </label>
           </div>
           <div class="controls">
             <label><span class="ta-only">பெயர்</span><span class="en-only">Name</span><input type="text" id="rName" placeholder="e.g. PD"></label>
-            <span id="rDobFields" style="display:contents">
+            <span id="rDobFields" style="display:none">
               <label><span class="ta-only">பிறந்த தேதி</span><span class="en-only">Date of birth</span><input type="date" id="rDate"></label>
               <label><span class="ta-only">பிறந்த நேரம்</span><span class="en-only">Time of birth</span><input type="time" id="rTime" value="06:00"></label>
               <label><span class="ta-only">பிறந்த ஊர்</span><span class="en-only">City of birth</span><select id="rPlace"></select></label>
             </span>
-            <span id="rStarFields" style="display:none">
+            <span id="rStarFields" style="display:contents">
               <label><span class="ta-only">ராசி</span><span class="en-only">Raasi</span><select id="rRasi"></select></label>
               <label><span class="ta-only">நட்சத்திரம்</span><span class="en-only">Nakshatram</span><select id="rNak"></select></label>
             </span>
