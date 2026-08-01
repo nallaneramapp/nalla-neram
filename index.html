@@ -1165,11 +1165,27 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
             <span class="ta-only">ஒவ்வொருவரின் <b>பிறந்த தேதி, நேரம், ஊர்</b> ஒருமுறை பதிவு செய்யுங்கள் — தினமும் திறக்கும்போது அவரவருக்கான தனிப்பட்ட பலன் (தாராபலம், சந்திராஷ்டமம், தசை-புக்தி, அன்றைய சிறப்பு) தானாகக் காட்டப்படும்.</span>
             <span class="en-only">Register each person's <b>date, time and city of birth</b> once — every time you open the app, each of them gets their own reading (tara balam, chandrashtama, dasa-bhukti and the day's specials) calculated automatically.</span>
           </p>
+          <div class="controls" style="margin-bottom:8px">
+            <label style="flex-direction:row;align-items:center;gap:6px">
+              <input type="radio" name="rMode" id="rModeDob" value="dob" checked onchange="rModeSwitch()">
+              <span class="ta-only">முழு பிறப்பு விவரம் (தேதி/நேரம்/ஊர்)</span><span class="en-only">Full birth details (date/time/city)</span>
+            </label>
+            <label style="flex-direction:row;align-items:center;gap:6px">
+              <input type="radio" name="rMode" id="rModeStar" value="star" onchange="rModeSwitch()">
+              <span class="ta-only">ராசி & நட்சத்திரம் மட்டும்</span><span class="en-only">Raasi & Nakshatram only</span>
+            </label>
+          </div>
           <div class="controls">
             <label><span class="ta-only">பெயர்</span><span class="en-only">Name</span><input type="text" id="rName" placeholder="e.g. PD"></label>
-            <label><span class="ta-only">பிறந்த தேதி</span><span class="en-only">Date of birth</span><input type="date" id="rDate"></label>
-            <label><span class="ta-only">பிறந்த நேரம்</span><span class="en-only">Time of birth</span><input type="time" id="rTime" value="06:00"></label>
-            <label><span class="ta-only">பிறந்த ஊர்</span><span class="en-only">City of birth</span><select id="rPlace"></select></label>
+            <span id="rDobFields" style="display:contents">
+              <label><span class="ta-only">பிறந்த தேதி</span><span class="en-only">Date of birth</span><input type="date" id="rDate"></label>
+              <label><span class="ta-only">பிறந்த நேரம்</span><span class="en-only">Time of birth</span><input type="time" id="rTime" value="06:00"></label>
+              <label><span class="ta-only">பிறந்த ஊர்</span><span class="en-only">City of birth</span><select id="rPlace"></select></label>
+            </span>
+            <span id="rStarFields" style="display:none">
+              <label><span class="ta-only">ராசி</span><span class="en-only">Raasi</span><select id="rRasi"></select></label>
+              <label><span class="ta-only">நட்சத்திரம்</span><span class="en-only">Nakshatram</span><select id="rNak"></select></label>
+            </span>
             <button class="btn" onclick="gAddProfile()"><span class="ta-only">➕ பதிவு செய்</span><span class="en-only">➕ Add person</span></button>
           </div>
           <div class="controls" style="margin-top:12px">
@@ -2150,9 +2166,13 @@ function _rangeCutoff(mode, nowJD, tz){
 function _memberChandraEvents(pr, nowJD, tz, l, mode){
   const ev=[]; let count=0;
   try{
-    const [by,bm,bd]=pr.dv.split('-').map(Number),[bh,bmin]=pr.tv.split(':').map(Number);
-    const bjd=julianDay(by,bm,bd,bh+bmin/60-pr.tz);
-    const jNak=Math.floor(sidereal(moonLon(bjd),bjd)/(360/27));
+    let jNak;
+    if(pr.mode==='star'){ jNak=pr.nak; }
+    else {
+      const [by,bm,bd]=pr.dv.split('-').map(Number),[bh,bmin]=pr.tv.split(':').map(Number);
+      const bjd=julianDay(by,bm,bd,bh+bmin/60-pr.tz);
+      jNak=Math.floor(sidereal(moonLon(bjd),bjd)/(360/27));
+    }
     let wins=(typeof nextNCAWindows==='function')?nextNCAWindows(jNak,nowJD,14):[];  // up to a year+
     wins=wins.filter(w=>w&&w.start!=null);
     if(mode==='next') wins=wins.slice(0,1);
@@ -2559,10 +2579,14 @@ function viewFutureShift(i,days){
 function viewFuture(i,startISO){
   const pr=loadProfiles()[i]; if(!pr) return;
   const loc=getPlace('fPlace');
-  const [by,bm,bd]=pr.dv.split('-').map(Number),[bh,bmin]=pr.tv.split(':').map(Number);
-  const bjd=julianDay(by,bm,bd,bh+bmin/60-pr.tz);
-  const bMoon=sidereal(moonLon(bjd),bjd);
-  const jNak=Math.floor(bMoon/NAKW), jRasi=Math.floor(bMoon/30);
+  let jNak,jRasi;
+  if(pr.mode==='star'){ jNak=pr.nak; jRasi=pr.rasi; }
+  else {
+    const [by,bm,bd]=pr.dv.split('-').map(Number),[bh,bmin]=pr.tv.split(':').map(Number);
+    const bjd=julianDay(by,bm,bd,bh+bmin/60-pr.tz);
+    const bMoon=sidereal(moonLon(bjd),bjd);
+    jNak=Math.floor(bMoon/NAKW); jRasi=Math.floor(bMoon/30);
+  }
   const caS=caStarOf(jNak);
   let base;
   if(startISO){ const [sy,sm,sd]=startISO.split('-').map(Number); base=new Date(sy,sm-1,sd); }
@@ -2615,23 +2639,29 @@ function viewJathagam(i){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function personalSummary(pr){
-  const [by,bm,bd]=pr.dv.split('-').map(Number), [bh,bmin]=pr.tv.split(':').map(Number);
-  const bjd=julianDay(by,bm,bd,bh+bmin/60-pr.tz);
-  const bMoon=sidereal(moonLon(bjd),bjd);
-  const jNak=Math.floor(bMoon/(360/27)), jRasi=Math.floor(bMoon/30);
+  const isStar=pr.mode==='star';
+  let jNak,jRasi,bMoon=null,bjd=null;
+  if(isStar){ jNak=pr.nak; jRasi=pr.rasi; }
+  else {
+    const [by,bm,bd]=pr.dv.split('-').map(Number), [bh,bmin]=pr.tv.split(':').map(Number);
+    bjd=julianDay(by,bm,bd,bh+bmin/60-pr.tz);
+    bMoon=sidereal(moonLon(bjd),bjd);
+    jNak=Math.floor(bMoon/(360/27)); jRasi=Math.floor(bMoon/30);
+  }
   const now=new Date();
   // today's transits/timings use the CURRENT location (panchangam tab selection / auto) — not birth place
   let loc=null; try{ loc=getPlace('pPlace'); }catch(e){}
-  if(!loc) loc={lat:pr.lat,lon:pr.lon,tz:pr.tz,tzr:(pr.tzr!==undefined?pr.tzr:pr.tz),name:pr.pn};
+  if(!loc) loc=isStar
+    ? {lat:13.0827,lon:80.2707,tz:5.5,tzr:"Asia/Kolkata",name:"சென்னை (Chennai)"}
+    : {lat:pr.lat,lon:pr.lon,tz:pr.tz,tzr:(pr.tzr!==undefined?pr.tzr:pr.tz),name:pr.pn};
   const tzNow=tzFor(loc.tzr!==undefined?loc.tzr:loc.tz,now);
   const p=computePanchang(now.getFullYear(),now.getMonth()+1,now.getDate(),loc.lat,loc.lon,tzNow,true);
   const ev=specialsFor(p);
   const cnt=((p.ni-jNak+27)%27)+1, tara=(cnt-1)%9;
   const cHouse=((p.moonRasi-jRasi+12)%12)+1;
   const isCA=cHouse===8, cBad=[6,8,12].includes(cHouse);
-  const dasa=buildDasa(bMoon,bjd);
   const nowJD=julianDay(now.getFullYear(),now.getMonth()+1,now.getDate(),now.getHours()+now.getMinutes()/60-tzNow);
-  const act=activeDasa(dasa,nowJD);
+  const act=isStar?null:activeDasa(buildDasa(bMoon,bjd),nowJD);   // dasa-bhukti needs exact birth time — DOB profiles only
   const ca=nextCAStar(jNak,nowJD);
   const isCAStar=ca&&ca.now;
   let verdict, vc;
@@ -3567,14 +3597,27 @@ async function reloadProfiles(){
   else _profiles=lsLoadProfiles();
   try{ renderProfiles(); enhanceProfiles(); }catch(e){}
 }
+function rModeSwitch(){
+  const star=document.getElementById('rModeStar').checked;
+  document.getElementById('rDobFields').style.display=star?'none':'contents';
+  document.getElementById('rStarFields').style.display=star?'contents':'none';
+}
 function addProfile(){
   const name=document.getElementById('rName').value.trim();
-  const dv=document.getElementById('rDate').value, tv=document.getElementById('rTime').value;
-  if(!name||!dv||!tv){ alert(T('பெயர், தேதி, நேரம் தேவை','Name, date and time are required')); return; }
+  if(!name){ alert(T('பெயர் தேவை','Name is required')); return; }
   if(useServer() && !nnRequireSignIn()) return;
-  const pi=+document.getElementById('rPlace').value, c=CITIES[pi];
-  const [ry,rm,rd]=dv.split('-').map(Number), btz=tzFor(c[3],new Date(ry,rm-1,rd,12));
-  const p={name,dv,tv,lat:c[1],lon:c[2],tz:btz,tzr:c[3],pn:c[0]};
+  const star=document.getElementById('rModeStar').checked;
+  let p;
+  if(star){
+    const nak=+document.getElementById('rNak').value, rasi=+document.getElementById('rRasi').value;
+    p={name,mode:'star',nak,rasi};
+  } else {
+    const dv=document.getElementById('rDate').value, tv=document.getElementById('rTime').value;
+    if(!dv||!tv){ alert(T('தேதி, நேரம் தேவை','Date and time are required')); return; }
+    const pi=+document.getElementById('rPlace').value, c=CITIES[pi];
+    const [ry,rm,rd]=dv.split('-').map(Number), btz=tzFor(c[3],new Date(ry,rm-1,rd,12));
+    p={name,dv,tv,lat:c[1],lon:c[2],tz:btz,tzr:c[3],pn:c[0]};
+  }
   document.getElementById('rName').value='';
   if(useServer()){ window.NN.nnProfiles.add(p).then(reloadProfiles); }
   else { const ps=lsLoadProfiles(); ps.push(p); lsSaveProfiles(ps); _profiles=ps; renderProfiles(); enhanceProfiles(); }
@@ -3692,6 +3735,7 @@ const GRAHA={
  "கேது":{en:"Ketu",         col:"#9b8f80", colTa:"சாம்பல்",          colEn:"grey",         dirTa:"தென்மேற்கு",  dirEn:"South-West", num:7, deTa:"விநாயகர்",          deEn:"Ganesha"}
 };
 function birthRasiOf(pr){
+  if(pr.mode==='star') return {jRasi:pr.rasi, jNak:pr.nak};
   const [by,bm,bd]=pr.dv.split('-').map(Number),[bh,bmin]=pr.tv.split(':').map(Number);
   const bjd=julianDay(by,bm,bd,bh+bmin/60-pr.tz);
   const bMoon=sidereal(moonLon(bjd),bjd);
@@ -4029,6 +4073,10 @@ function init(){
     CITIES.forEach((c,i)=>{ if(id!=='jPlace'&&i===CITIES.length-1) return;
       const o=document.createElement('option'); o.value=i; o.textContent=c[0]; sel.appendChild(o); });
   }
+  const rRasiSel=document.getElementById('rRasi');
+  if(rRasiSel) RASI.forEach((r,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=r+' ('+RASI_EN[i]+')'; rRasiSel.appendChild(o); });
+  const rNakSel=document.getElementById('rNak');
+  if(rNakSel) NAK.forEach((n,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=n+' ('+NAK_EN[i]+')'; rNakSel.appendChild(o); });
   /* changing the city re-renders the panchangam immediately */
   const pSel=document.getElementById('pPlace');
   if(pSel) pSel.addEventListener('change',()=>{ try{ renderTodayBanner(); renderPanchang(); }catch(e){} renderChandraOverview(); });
