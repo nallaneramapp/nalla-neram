@@ -55,7 +55,7 @@
       "name": "Ungal Nalla Neram",
       "url": "https://www.yournallaneram.com/",
       "logo": "https://www.yournallaneram.com/og-image.png",
-      "sameAs": ["https://www.instagram.com/nallaneramapp/"]
+      "sameAs": ["https://www.instagram.com/yournallaneram/", "https://www.youtube.com/@YourNallaNeram"]
     },
     {
       "@type": "WebApplication",
@@ -144,6 +144,18 @@ h1,h2,h3,h4{font-family:'Noto Serif Tamil','Cormorant Garamond',serif; font-weig
 .ig-foot:hover{color:#fff;}
 .ig-svg{display:block;}
 @media print{ .ig-top,.ig-foot{display:none !important;} }
+/* YouTube links (top + footer) — same badge treatment as Instagram, brand red */
+.yt-badge{display:inline-flex; align-items:center; justify-content:center; color:#fff; background:#FF0000;}
+.yt-top{width:32px; height:32px; border-radius:9px; box-shadow:0 2px 8px rgba(0,0,0,.28); flex:0 0 auto;}
+.yt-top .yt-svg{width:19px; height:19px;}
+.yt-top:hover{filter:brightness(1.1);}
+.yt-foot{display:inline-flex; align-items:center; gap:9px; margin:2px auto 4px; color:var(--gold-bright);
+  text-decoration:none; font-size:.92rem; font-weight:600;}
+.yt-foot .yt-badge{width:30px; height:30px; border-radius:8px;}
+.yt-foot .yt-svg{width:18px; height:18px;}
+.yt-foot:hover{color:#fff;}
+.yt-svg{display:block;}
+@media print{ .yt-top,.yt-foot{display:none !important;} }
 .navpills{display:flex; gap:5px; margin-left:auto; flex-wrap:wrap; align-items:center;}
 .navpills button.tabbtn{position:relative; background:transparent; color:var(--cream); border:1px solid rgba(217,182,74,.42);
   border-radius:30px; padding:8px 14px; font-family:inherit; font-size:.84rem; cursor:pointer; transition:all .18s; white-space:nowrap; display:flex; align-items:center; gap:6px;}
@@ -775,6 +787,8 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
   #tb2{display:none;}
   .ig-top{width:26px; height:26px;}
   .ig-top .ig-svg{width:15px; height:15px;}
+  .yt-top{width:26px; height:26px;}
+  .yt-top .yt-svg{width:15px; height:15px;}
   .navpills button.tabbtn{padding:6px 9px; font-size:.7rem; gap:3px;}
   .navpills .lockbadge,.navpills .badge-enq{display:none;}
   .gopro-btn{padding:6px 10px; font-size:.72rem;}
@@ -793,6 +807,11 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
   .daylist .dt{min-width:0; width:100%;}
   .ics-day{display:inline-block; margin-top:8px; padding:7px 16px; font-size:.76rem; white-space:normal;}
   .badspl{font-size:.8rem; padding:5px 11px;}
+  /* Place / category <select> elements size to their longest option text by default,
+     which pushed them past the screen edge on phones (home panchangam card + the
+     special-days filter row). Force each control onto its own full-width row. */
+  .controls label{width:100%;}
+  .controls select, .controls input{width:100%; max-width:100%; box-sizing:border-box;}
 }
 </style>
 </head>
@@ -828,8 +847,11 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
           <button id="nnMenuSignout" class="nn-signout">Sign out</button>
         </div>
       </div>
-      <a class="ig-badge ig-top" href="https://www.instagram.com/nallaneramapp/" target="_blank" rel="noopener" aria-label="Instagram — @nallaneramapp" title="Follow @nallaneramapp on Instagram">
+      <a class="ig-badge ig-top" href="https://www.instagram.com/yournallaneram/" target="_blank" rel="noopener" aria-label="Instagram — @yournallaneram" title="Follow @yournallaneram on Instagram">
         <svg class="ig-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.35" fill="currentColor"/></svg>
+      </a>
+      <a class="yt-badge yt-top" href="https://www.youtube.com/@YourNallaNeram" target="_blank" rel="noopener" aria-label="YouTube — @YourNallaNeram" title="Subscribe to @YourNallaNeram on YouTube">
+        <svg class="yt-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2.6" y="5.2" width="18.8" height="13.6" rx="4" stroke="currentColor" stroke-width="2"/><path d="M10.3 9.1L15.3 12L10.3 14.9V9.1Z" fill="currentColor"/></svg>
       </a>
       <div class="langtog">
         <button id="lgTa" class="on" onclick="setLang('ta')">தமிழ்</button>
@@ -1311,9 +1333,13 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
     <rect x="10.5" y="32.6" width="3" height="1.3" rx=".3" fill="#e6c565" stroke="#9a7412" stroke-width=".3"/>
   </svg>உங்கள் நல்ல நேரம் · Ungal Nalla Neram</div>
   <div class="fkolam">✦ ❋ ✼ ❋ ✦</div>
-  <a class="ig-foot" href="https://www.instagram.com/nallaneramapp/" target="_blank" rel="noopener">
+  <a class="ig-foot" href="https://www.instagram.com/yournallaneram/" target="_blank" rel="noopener">
     <span class="ig-badge"><svg class="ig-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.35" fill="currentColor"/></svg></span>
-    <span class="ta-only">Instagram-ல் பின்தொடருங்கள்</span><span class="en-only">Follow us on Instagram</span> <b>@nallaneramapp</b>
+    <span class="ta-only">Instagram-ல் பின்தொடருங்கள்</span><span class="en-only">Follow us on Instagram</span> <b>@yournallaneram</b>
+  </a>
+  <a class="yt-foot" href="https://www.youtube.com/@YourNallaNeram" target="_blank" rel="noopener">
+    <span class="yt-badge"><svg class="yt-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2.6" y="5.2" width="18.8" height="13.6" rx="4" stroke="currentColor" stroke-width="2"/><path d="M10.3 9.1L15.3 12L10.3 14.9V9.1Z" fill="currentColor"/></svg></span>
+    <span class="ta-only">YouTube-ல் பின்தொடருங்கள்</span><span class="en-only">Follow us on YouTube</span> <b>@YourNallaNeram</b>
   </a>
   <div class="flinks">
     <a onclick="enterApp(0)"><span class="ta-only">பஞ்சாங்கம்</span><span class="en-only">Panchangam</span></a>
