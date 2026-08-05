@@ -780,6 +780,19 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
   .gopro-btn{padding:6px 10px; font-size:.72rem;}
   .langtog{padding:1px;}
   .langtog button{padding:4px 8px; font-size:.68rem;}
+  /* Special-days month calendar + the event list below it were cramped on phones:
+     tighten the grid slightly, and stack each event row instead of squeezing the
+     date column and the festival badges into a too-narrow flex row. */
+  .calgrid{gap:3px;}
+  .calcell{min-height:60px; padding:3px 4px; font-size:.6rem;}
+  .calcell .gd{font-size:.8rem;}
+  .calcell .td2{font-size:.54rem;}
+  .calcell .ev{font-size:.54rem;}
+  .calnav b{min-width:0; font-size:1rem;}
+  .daylist .row{flex-direction:column; gap:8px; padding:12px 8px;}
+  .daylist .dt{min-width:0; width:100%;}
+  .ics-day{display:inline-block; margin-top:8px; padding:7px 16px; font-size:.76rem; white-space:normal;}
+  .badspl{font-size:.8rem; padding:5px 11px;}
 }
 </style>
 </head>
@@ -1104,6 +1117,8 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
                 <option value="sankatahara">🐘 சங்கடஹர சதுர்த்தி (Sankatahara Chaturthi)</option>
                 <option value="pongal">🌾 பொங்கல் (Pongal)</option>
                 <option value="deepavali">🪔 தீபாவளி (Deepavali)</option>
+                <option value="saraswathi">📚 சரஸ்வதி / ஆயுத பூஜை (Saraswathi / Ayudha Pooja)</option>
+                <option value="vijayadasami">🏹 விஜயதசமி (Vijayadasami)</option>
               </select>
             </label>
           </div>
@@ -1111,7 +1126,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
           <div class="cal-export">
             <button class="btn cal-exp-btn" onclick="printCalendar()">🖨️ <span class="ta-only">இந்த மாதத்தை PDF-ஆக பதிவிறக்கு</span><span class="en-only">Download this month as PDF</span><span class="exp-pro">PRO</span></button>
           </div>
-          <p style="font-size:.72rem;color:var(--ink3);text-align:center;margin:0 0 8px"><span class="ta-only">💡 கீழே ஒரு நாளின் அருகில் 🗓️ அழுத்தி அந்த நாளை மட்டும் காலண்டரில் சேர்க்கலாம்.</span><span class="en-only">💡 Tap 🗓️ next to any day below to add just that day to your calendar.</span></p>
+          <p style="font-size:.72rem;color:var(--ink3);text-align:center;margin:0 0 8px"><span class="ta-only">💡 கீழே ஒரு நாளின் அருகில் 🗓️ அழுத்தி அந்த நாளை மட்டும் iCal/ICS காலண்டரில் சேர்க்கலாம்.</span><span class="en-only">💡 Tap 🗓️ next to any day below to add just that day to your iCal/ICS calendar.</span></p>
           <div class="calgrid" id="calGrid"></div>
           <p style="font-size:.76rem;color:var(--ink2);margin-top:6px"><span class="ta-only">தேதியை அழுத்தினால் அந்த நாளின் முழு பஞ்சாங்கம் காணலாம்</span><span class="en-only">Click any date to see its full panchangam</span></p>
           <h3 id="calListTitle"></h3>
@@ -1379,7 +1394,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
     <button class="closex" onclick="closeIcsRange()">✕</button>
     <div class="modal-top">
       <div class="crown">🗓️</div>
-      <h3><span class="ta-only">சந்திராஷ்டமம் — காலண்டரில் சேர்</span><span class="en-only">Add chandrashtamam</span></h3>
+      <h3><span class="ta-only">சந்திராஷ்டமம் — iCal/ICS காலண்டரில் சேர்</span><span class="en-only">Add chandrashtamam (iCal/ICS)</span></h3>
       <div class="sub" id="icsRangeSub"></div>
     </div>
     <div class="modal-body">
@@ -2448,7 +2463,8 @@ function gotoCalendarDay(y,m,d){
    substring against the (bilingual) event text already produced by specialsFor. */
 const CAL_CATEGORIES={
   amavasai:'அமாவாசை', pournami:'பௌர்ணமி', eclipse:'கிரகணம்',
-  sashti:'சஷ்டி', sankatahara:'சங்கடஹர', pongal:'பொங்கல்', deepavali:'தீபாவளி'
+  sashti:'சஷ்டி', sankatahara:'சங்கடஹர', pongal:'பொங்கல்', deepavali:'தீபாவளி',
+  saraswathi:'சரஸ்வதி', vijayadasami:'விஜயதசமி'
 };
 function calFilterEv(ev,catKey){
   if(!catKey||catKey==='all') return ev;
@@ -2497,8 +2513,7 @@ function renderSpecialDays(){
         timeLine+=`<div class="wd">⏱ ${T('திதி தொடக்கம்','Tithi starts')}: <b>${tr.from}</b> · ${endLabel}: <b>${tr.to}</b></div>`;
       }
       return `<div class="row" id="spl-day-${o.d}"><div class="dt">${String(o.d).padStart(2,'0')}-${String(calM+1).padStart(2,'0')}-${calY}<div class="wd">${WDAY[new Date(calY,calM,o.d).getDay()]} · ${o.td.month} ${o.td.day}</div>${timeLine}
-         <button class="ics-day" onclick="addDayICS(${calY},${calM+1},${o.d})" title="${T('இந்நாளை காலண்டரில் சேர்','Add this day to calendar')}">🗓️ ${T('சேர்','Add')}</button>
-         <button class="btn" style="margin-top:4px" onclick="gotoDate(${calY},${calM+1},${o.d})">📅 ${T('பஞ்சாங்கத்தில் காண்க','View in Panchangam')} →</button></div>
+         <button class="ics-day" onclick="addDayICS(${calY},${calM+1},${o.d})" title="${T('இந்நாளை iCal/ICS காலண்டரில் சேர்','Add this day to iCal/ICS calendar')}">🗓️ ${T('iCal/ICS சேர்','Add to iCal/ICS')}</button></div>
        <div>${o.ev.map(e=>occBadge(e)).join(' ')}</div></div>`;
     }).join('');
   } else if(catKey!=='all'){
@@ -3850,7 +3865,7 @@ function decorateProfiles(){
     if(card.querySelector('.today-you')) return;
     const pr=ps[i]; if(!pr) return;
     const icsBtn='<button class="ics-day" style="margin-top:10px" onclick="openIcsRange(\'member\','+i+')">'+
-      '🗓️ '+T('சந்திராஷ்டம நாட்களை காலண்டரில் சேர்','Add chandrashtamam dates to calendar')+
+      '🗓️ '+T('சந்திராஷ்டம நாட்களை iCal/ICS காலண்டரில் சேர்','Add chandrashtamam dates to iCal/ICS')+
       '<span class="exp-pro">PRO</span></button>';
     try{ card.insertAdjacentHTML('beforeend', dailyCardHTML(pr)+icsBtn); }catch(e){}
   });
