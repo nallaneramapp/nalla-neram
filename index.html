@@ -156,6 +156,10 @@ h1,h2,h3,h4{font-family:'Noto Serif Tamil','Cormorant Garamond',serif; font-weig
 .yt-foot:hover{color:#fff;}
 .yt-svg{display:block;}
 @media print{ .yt-top,.yt-foot{display:none !important;} }
+/* groups Instagram + YouTube + the language toggle as a single flex item inside
+   .navpills, so when the top bar wraps on narrow screens this trio wraps as one
+   unit onto its own line instead of splitting mid-group. */
+.navpills-social{display:flex; align-items:center; gap:8px; flex:0 0 auto;}
 .navpills{display:flex; gap:5px; margin-left:auto; flex-wrap:wrap; align-items:center;}
 .navpills button.tabbtn{position:relative; background:transparent; color:var(--cream); border:1px solid rgba(217,182,74,.42);
   border-radius:30px; padding:8px 14px; font-family:inherit; font-size:.84rem; cursor:pointer; transition:all .18s; white-space:nowrap; display:flex; align-items:center; gap:6px;}
@@ -780,8 +784,9 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
   .app-tabbar button{padding:7px 10px; font-size:.76rem;}
   .flagship{padding:22px 18px;} .flagship h3{font-size:1.25rem;}
   .stage{padding:20px 16px 16px; min-height:380px;}
-  .topbar-inner{padding:6px 12px; gap:8px;}
+  .topbar-inner{padding:6px 12px 6px 6px; gap:8px;}
   .navpills{gap:6px;}
+  .navpills-social{gap:6px;}
   /* mobile top bar: drop Jathagam, tighten the remaining tab buttons and the
      Instagram icon so Panchangam stays the clear first pill */
   #tb2{display:none;}
@@ -811,7 +816,11 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
      which pushed them past the screen edge on phones (home panchangam card + the
      special-days filter row). Force each control onto its own full-width row. */
   .controls label{width:100%;}
-  .controls select, .controls input{width:100%; max-width:100%; box-sizing:border-box;}
+  .controls select, .controls input:not([type=date]){width:100%; max-width:100%; box-sizing:border-box;}
+  /* input[type=date] was stretched to the full row width like the other fields,
+     but its native segments/icon don't fill that space — it just left an odd gap.
+     Let it size to its own content instead, capped so it can't overflow. */
+  .controls input[type=date]{max-width:100%; box-sizing:border-box;}
 }
 </style>
 </head>
@@ -847,15 +856,17 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
           <button id="nnMenuSignout" class="nn-signout">Sign out</button>
         </div>
       </div>
-      <a class="ig-badge ig-top" href="https://www.instagram.com/yournallaneram/" target="_blank" rel="noopener" aria-label="Instagram — @yournallaneram" title="Follow @yournallaneram on Instagram">
-        <svg class="ig-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.35" fill="currentColor"/></svg>
-      </a>
-      <a class="yt-badge yt-top" href="https://www.youtube.com/@YourNallaNeram" target="_blank" rel="noopener" aria-label="YouTube — @YourNallaNeram" title="Subscribe to @YourNallaNeram on YouTube">
-        <svg class="yt-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2.6" y="5.2" width="18.8" height="13.6" rx="4" stroke="currentColor" stroke-width="2"/><path d="M10.3 9.1L15.3 12L10.3 14.9V9.1Z" fill="currentColor"/></svg>
-      </a>
-      <div class="langtog">
-        <button id="lgTa" class="on" onclick="setLang('ta')">தமிழ்</button>
-        <button id="lgEn" onclick="setLang('en')">EN</button>
+      <div class="navpills-social">
+        <a class="ig-badge ig-top" href="https://www.instagram.com/yournallaneram/" target="_blank" rel="noopener" aria-label="Instagram — @yournallaneram" title="Follow @yournallaneram on Instagram">
+          <svg class="ig-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.35" fill="currentColor"/></svg>
+        </a>
+        <a class="yt-badge yt-top" href="https://www.youtube.com/@YourNallaNeram" target="_blank" rel="noopener" aria-label="YouTube — @YourNallaNeram" title="Subscribe to @YourNallaNeram on YouTube">
+          <svg class="yt-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2.6" y="5.2" width="18.8" height="13.6" rx="4" stroke="currentColor" stroke-width="2"/><path d="M10.3 9.1L15.3 12L10.3 14.9V9.1Z" fill="currentColor"/></svg>
+        </a>
+        <div class="langtog">
+          <button id="lgTa" class="on" onclick="setLang('ta')">தமிழ்</button>
+          <button id="lgEn" onclick="setLang('en')">EN</button>
+        </div>
       </div>
     </div>
   </div>
