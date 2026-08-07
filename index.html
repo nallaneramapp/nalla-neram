@@ -620,6 +620,7 @@ tr.brow td{background:var(--red-bg); color:#8f2323;}
 .daylist .row{display:flex; gap:12px; padding:11px 6px; border-bottom:1px dashed #d8bf85; align-items:flex-start;}
 .daylist .dt{min-width:112px; font-weight:700; color:var(--maroon); font-size:.9rem;}
 .daylist .dt .wd{font-weight:400; font-size:.78rem; color:var(--gold-deep);}
+.spl-note{font-weight:400; font-style:italic; color:var(--ink3);}
 .chartwrap{display:flex; gap:18px; flex-wrap:wrap; justify-content:center;}
 .sichart{display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(4,1fr); width:min(360px,92vw); aspect-ratio:1; border:3px solid var(--maroon); background:var(--maroon); gap:2px; border-radius:8px; overflow:hidden; box-shadow:var(--shadow);}
 .sichart .cell{background:var(--cream); padding:3px 4px; font-size:.68rem; position:relative; min-height:0; overflow:hidden;}
@@ -1618,6 +1619,7 @@ function findCross(fn,target,jdStart,maxH){
 }
 const phaseAt=jd=>rev(moonLon(jd)-sunPos(jd).lon);
 const moonSidAt=jd=>sidereal(moonLon(jd),jd);
+const sunSidAt=jd=>sidereal(sunPos(jd).lon,jd);
 const yogaAngAt=jd=>rev(sidereal(moonLon(jd),jd)+sidereal(sunPos(jd).lon,jd));
 
 /* ============ Names & constants ============ */
@@ -1768,6 +1770,13 @@ function fmtCrossFull(jdc,tz){ if(jdc==null) return "—";
   const ap=hh<12?"AM":"PM"; let h12=hh%12; if(h12===0)h12=12;
   return String(dNum).padStart(2,'0')+"-"+String(mNum).padStart(2,'0')+"-"+y+", "+h12+":"+String(mm).padStart(2,"0")+" "+ap;
 }
+/* which local calendar day (as a sortable YYYYMMDD number) a jd falls on —
+   same conversion as fmtCrossFull, so "is this the same day we're
+   displaying" always agrees with what fmtCrossFull prints. */
+function jdLocalDayKey(jd,tz){ if(jd==null) return null;
+  const dt=new Date((jd-2440587.5+tz/24)*86400000);
+  return dt.getUTCFullYear()*10000+(dt.getUTCMonth()+1)*100+dt.getUTCDate();
+}
 
 function tamilDate(sunSidLon,y,m,d){
   const mi=Math.floor(sunSidLon/30);        // 0=Mesha=Chithirai
@@ -1824,55 +1833,80 @@ function tithiStart(ti,jdSR){ return findCross(phaseAt,(ti*12)%360,jdSR-1.6,48);
 /* start of the day's nakshatram — mirrors tithiStart; nakshatram lasts up
    to ~30.5h so search further back than the tithi case. */
 function nakStart(ni,jdSR){ return findCross(moonSidAt,(ni*(360/27))%360,jdSR-1.4,48); }
-function specialsFor(p){
+/* start/end of the day's Tamil solar-calendar date (td.day within td.month) —
+   mirrors tithiStart/nakStart, against the sun's sidereal longitude instead
+   of the moon's. Uses the same "~0.9856°/day since sankranti" approximation
+   tamilDate() already uses for the day number, so the boundary shown stays
+   consistent with the day number already displayed; day 1 of a month is an
+   exact sankranti (rasi-transition) crossing, the most astronomically real
+   of these boundaries. Tamil days run close to 24h, so a much smaller search
+   window than tithi/nakshatram is enough. */
+function tamilDayStart(mi,tday,jdSR){ return findCross(sunSidAt,rev(mi*30+(tday-1)*0.9856026),jdSR-1.2,40); }
+function tamilDayEnd(mi,tday,jdSR){ return findCross(sunSidAt,rev(mi*30+tday*0.9856026),jdSR,40); }
+/* Full, tagged version of specialsFor: each entry also records which single-day
+   astronomical snapshot it's keyed to — 'ti' (the sunrise tithi, p.ti), 'ni'
+   (the sunrise nakshatram, p.ni), 'td' (the Tamil solar calendar date,
+   p.td.day), 'tiEve'/'tiNight' (the evening/night tithi snapshots Pradosham
+   and Sankatahara Chaturthi use instead of the sunrise one), or null
+   (weekday-matches and the Varalakshmi Viratham weekday+tithi-range rule,
+   neither of which is a single astronomical span with its own start/end).
+   specialsFor() below just strips the tag, so every existing caller keeps
+   working unchanged; the tag is used by renderSpecialDays to show each
+   event's real start/end time and to surface it on every civil day it
+   actually touches (these spans routinely straddle midnight). */
+function specialsForFull(p){
   const ev=[], mi=p.td.monthIdx, ti=p.ti, ni=p.ni, wd=p.wd, tday=p.td.day;
-  if(tday===1) ev.push(TMONTH[mi]+" மாத பிறப்பு ("+TMONTH_EN[mi]+" month begins)");
-  if(mi===0&&tday===1) ev.push("🎉 தமிழ் புத்தாண்டு (Tamil New Year)");
-  if(mi===9&&tday===1) ev.push("🌾 தைப்பொங்கல் (Thai Pongal)");
-  if(mi===9&&tday===2) ev.push("🐂 மாட்டுப் பொங்கல் (Mattu Pongal)");
-  if(mi===3&&tday===18) ev.push("💧 ஆடிப் பெருக்கு (Aadi Perukku)");
-  if(mi===11&&tday===1) ev.push("காரடையான் நோன்பு (Karadaiyan Nombu)");
-  if(ti===29){ ev.push("🌑 அமாவாசை (Amavasai)");
-    if(mi===3) ev.push("ஆடி அமாவாசை — பித்ரு தர்ப்பணம்");
-    if(mi===5) ev.push("மகாளய அமாவாசை (Mahalaya)");
-    if(mi===9) ev.push("தை அமாவாசை — பித்ரு தர்ப்பணம்");
-    if(eclipseNear(p.jdSR,0,1.6)) ev.push("🌑🌘 சூரிய கிரகணம் (Solar Eclipse)");
+  const push=(text,basis)=>ev.push({text,basis:basis||null});
+  if(tday===1) push(TMONTH[mi]+" மாத பிறப்பு ("+TMONTH_EN[mi]+" month begins)",'td');
+  if(mi===0&&tday===1) push("🎉 தமிழ் புத்தாண்டு (Tamil New Year)",'td');
+  if(mi===9&&tday===1) push("🌾 தைப்பொங்கல் (Thai Pongal)",'td');
+  if(mi===9&&tday===2) push("🐂 மாட்டுப் பொங்கல் (Mattu Pongal)",'td');
+  if(mi===3&&tday===18) push("💧 ஆடிப் பெருக்கு (Aadi Perukku)",'td');
+  if(mi===11&&tday===1) push("காரடையான் நோன்பு (Karadaiyan Nombu)",'td');
+  if(ti===29){ push("🌑 அமாவாசை (Amavasai)",'ti');
+    if(mi===3) push("ஆடி அமாவாசை — பித்ரு தர்ப்பணம்",'ti');
+    if(mi===5) push("மகாளய அமாவாசை (Mahalaya)",'ti');
+    if(mi===9) push("தை அமாவாசை — பித்ரு தர்ப்பணம்",'ti');
+    if(eclipseNear(p.jdSR,0,1.6)) push("🌑🌘 சூரிய கிரகணம் (Solar Eclipse)",'ti');
   }
-  if(ti===14){ ev.push("🌕 பௌர்ணமி (Pournami)");
-    if(mi===0) ev.push("சித்ரா பௌர்ணமி (Chitra Pournami)");
-    if(mi===4) ev.push("ஆவணி அவிட்டம் / உபாகர்மா (Avani Avittam)");
-    if(eclipseNear(p.jdSR,180,1.2)) ev.push("🌕🌘 சந்திர கிரகணம் (Lunar Eclipse)");
+  if(ti===14){ push("🌕 பௌர்ணமி (Pournami)",'ti');
+    if(mi===0) push("சித்ரா பௌர்ணமி (Chitra Pournami)",'ti');
+    if(mi===4) push("ஆவணி அவிட்டம் / உபாகர்மா (Avani Avittam)",'ti');
+    if(eclipseNear(p.jdSR,180,1.2)) push("🌕🌘 சந்திர கிரகணம் (Lunar Eclipse)",'ti');
   }
-  if(ti===10){ ev.push("🙏 ஏகாதசி — வளர்பிறை (Ekadasi)");
-    if(mi===8) ev.push("✨ வைகுண்ட ஏகாதசி (Vaikunta Ekadasi)"); }
-  if(ti===25) ev.push("🙏 ஏகாதசி — தேய்பிறை (Ekadasi)");
-  if(p.tiEve===12||p.tiEve===27) ev.push("🔱 பிரதோஷம் (Pradosham) — மாலை சிவ வழிபாடு");
-  if(p.tiNight===18) ev.push("🐘 சங்கடஹர சதுர்த்தி (Sankatahara Chaturthi)");
-  if(ti===3&&mi===4) ev.push("🐘 விநாயகர் சதுர்த்தி (Vinayagar Chaturthi)");
-  if(ti===5) ev.push("🔱 சஷ்டி விரதம் (Sashti) — முருகன் வழிபாடு");
-  if(ti===5&&mi===6) ev.push("⚔️ கந்த சஷ்டி / சூரசம்ஹாரம் (Kanda Sashti)");
-  if(ni===2){ ev.push("🪔 கார்த்திகை விரதம் (Krithigai)");
-    if(mi===7) ev.push("🪔 திருக்கார்த்திகை தீபம் (Karthigai Deepam)"); }
-  if(ni===7&&mi===9) ev.push("🦚 தைப்பூசம் (Thai Poosam)");
-  if(ni===11&&mi===11) ev.push("💐 பங்குனி உத்திரம் (Panguni Uthiram)");
-  if(ni===15&&mi===1) ev.push("🔱 வைகாசி விசாகம் (Vaigasi Visagam)");
-  if(ni===10&&mi===3) ev.push("🌺 ஆடிப்பூரம் (Aadi Pooram)");
-  if(mi===5&&ti===0) ev.push("🥁 நவராத்திரி ஆரம்பம் (Navaratri begins)");
-  if(mi===5&&ti===8) ev.push("📚 சரஸ்வதி பூஜை / ஆயுத பூஜை (Saraswathi / Ayudha Poojai)");
-  if(mi===5&&ti===9) ev.push("🏹 விஜயதசமி (Vijayadasami)");
-  if(mi===4&&ti===22) ev.push("🦚 கிருஷ்ண ஜெயந்தி / கோகுலாஷ்டமி (Krishna Jayanthi)");
-  if(mi===6&&ti===28) ev.push("🪔 தீபாவளி (Deepavali)");
-  if(mi===10&&ti===28) ev.push("🔱 மகா சிவராத்திரி (Maha Shivaratri)");
-  if(mi===0&&ti===8) ev.push("🏹 ஸ்ரீராம நவமி (Sri Rama Navami)");
-  if(mi===1&&ti===2) ev.push("💰 அட்சய திருதியை (Akshaya Tritiyai)");
-  if(mi===3&&wd===5) ev.push("ஆடி வெள்ளி (Aadi Velli) — அம்மன் வழிபாடு");
-  if(mi===3&&wd===2) ev.push("ஆடி செவ்வாய் (Aadi Chevvai)");
-  if(mi===9&&wd===5) ev.push("தை வெள்ளி (Thai Velli)");
-  if(mi===5&&wd===6) ev.push("புரட்டாசி சனி (Purattasi Sani) — பெருமாள் வழிபாடு");
-  if(mi===4&&wd===5&&ti>=8&&ti<=13) ev.push("🪙 வரலட்சுமி விரதம் (Varalakshmi Viratham)");
-  if(mi===8) if(ti===0) ev.push("மார்கழி பஜனை / திருப்பாவை காலம் தொடக்கம்");
-  return [...new Set(ev)];
+  if(ti===10){ push("🙏 ஏகாதசி — வளர்பிறை (Ekadasi)",'ti');
+    if(mi===8) push("✨ வைகுண்ட ஏகாதசி (Vaikunta Ekadasi)",'ti'); }
+  if(ti===25) push("🙏 ஏகாதசி — தேய்பிறை (Ekadasi)",'ti');
+  if(p.tiEve===12||p.tiEve===27) push("🔱 பிரதோஷம் (Pradosham) — மாலை சிவ வழிபாடு",'tiEve');
+  if(p.tiNight===18) push("🐘 சங்கடஹர சதுர்த்தி (Sankatahara Chaturthi)",'tiNight');
+  if(ti===3&&mi===4) push("🐘 விநாயகர் சதுர்த்தி (Vinayagar Chaturthi)",'ti');
+  if(ti===5) push("🔱 சஷ்டி விரதம் (Sashti) — முருகன் வழிபாடு",'ti');
+  if(ti===5&&mi===6) push("⚔️ கந்த சஷ்டி / சூரசம்ஹாரம் (Kanda Sashti)",'ti');
+  if(ni===2){ push("🪔 கார்த்திகை விரதம் (Krithigai)",'ni');
+    if(mi===7) push("🪔 திருக்கார்த்திகை தீபம் (Karthigai Deepam)",'ni'); }
+  if(ni===7&&mi===9) push("🦚 தைப்பூசம் (Thai Poosam)",'ni');
+  if(ni===11&&mi===11) push("💐 பங்குனி உத்திரம் (Panguni Uthiram)",'ni');
+  if(ni===15&&mi===1) push("🔱 வைகாசி விசாகம் (Vaigasi Visagam)",'ni');
+  if(ni===10&&mi===3) push("🌺 ஆடிப்பூரம் (Aadi Pooram)",'ni');
+  if(mi===5&&ti===0) push("🥁 நவராத்திரி ஆரம்பம் (Navaratri begins)",'ti');
+  if(mi===5&&ti===8) push("📚 சரஸ்வதி பூஜை / ஆயுத பூஜை (Saraswathi / Ayudha Poojai)",'ti');
+  if(mi===5&&ti===9) push("🏹 விஜயதசமி (Vijayadasami)",'ti');
+  if(mi===4&&ti===22) push("🦚 கிருஷ்ண ஜெயந்தி / கோகுலாஷ்டமி (Krishna Jayanthi)",'ti');
+  if(mi===6&&ti===28) push("🪔 தீபாவளி (Deepavali)",'ti');
+  if(mi===10&&ti===28) push("🔱 மகா சிவராத்திரி (Maha Shivaratri)",'ti');
+  if(mi===0&&ti===8) push("🏹 ஸ்ரீராம நவமி (Sri Rama Navami)",'ti');
+  if(mi===1&&ti===2) push("💰 அட்சய திருதியை (Akshaya Tritiyai)",'ti');
+  if(mi===3&&wd===5) push("ஆடி வெள்ளி (Aadi Velli) — அம்மன் வழிபாடு");
+  if(mi===3&&wd===2) push("ஆடி செவ்வாய் (Aadi Chevvai)");
+  if(mi===9&&wd===5) push("தை வெள்ளி (Thai Velli)");
+  if(mi===5&&wd===6) push("புரட்டாசி சனி (Purattasi Sani) — பெருமாள் வழிபாடு");
+  if(mi===4&&wd===5&&ti>=8&&ti<=13) push("🪙 வரலட்சுமி விரதம் (Varalakshmi Viratham)");
+  if(mi===8) if(ti===0) push("மார்கழி பஜனை / திருப்பாவை காலம் தொடக்கம்",'ti');
+  const seen=new Set(), out=[];
+  for(const e of ev){ if(seen.has(e.text)) continue; seen.add(e.text); out.push(e); }
+  return out;
 }
+function specialsFor(p){ return specialsForFull(p).map(e=>e.text); }
 
 /* ============ UI helpers ============ */
 let AUTOLOC=null;
@@ -2508,15 +2542,49 @@ function calFilterEv(ev,catKey){
   const needle=CAL_CATEGORIES[catKey]; if(!needle) return ev;
   return ev.filter(e=>e.indexOf(needle)>=0);
 }
-/* start/end time for the day's tithi, formatted for display — used for
-   Amavasai/Pournami (and, on eclipse days, this end boundary IS the exact
-   new/full moon — i.e. the eclipse — since that's how the tithi is defined,
-   so no separate "eclipse time" needs computing). Location-specific. */
-function tithiTimeRange(y,m,d,pl){
+/* exact start/end of the day's sunrise tithi ('ti') or nakshatram ('ni'),
+   localized to the given place — covers every basis specialsForFull tags:
+   'ti' (sunrise tithi), 'ni' (sunrise nakshatram), 'td' (Tamil solar date),
+   and 'tiEve'/'tiNight' (Pradosham/Sankatahara Chaturthi's own evening/night
+   tithi snapshots, computed at their own reference time rather than
+   sunrise). Recomputes panchang with light:false (the month-grid loop uses
+   light:true and skips this — it needs the extra findCross work). */
+function basisTimeRange(basis,y,m,d,pl){
   const tzd=tzFor(pl.tzr!==undefined?pl.tzr:pl.tz,new Date(y,m-1,d,12));
   const p=computePanchang(y,m,d,pl.lat,pl.lon,tzd,false);
-  const start=tithiStart(p.ti,p.jdSR);
-  return {from:fmtCrossFull(start,tzd), to:fmtCrossFull(p.tithiEnd,tzd)};
+  if(basis==='ti') return {start:tithiStart(p.ti,p.jdSR),end:p.tithiEnd,tzd};
+  if(basis==='ni') return {start:nakStart(p.ni,p.jdSR),end:p.nakEnd,tzd};
+  if(basis==='td') return {start:tamilDayStart(p.td.monthIdx,p.td.day,p.jdSR),end:tamilDayEnd(p.td.monthIdx,p.td.day,p.jdSR),tzd};
+  const ref=basis==='tiEve'?julianDay(y,m,d,18-tzd):julianDay(y,m,d,20.5-tzd);
+  const tv=basis==='tiEve'?p.tiEve:p.tiNight;
+  return {start:tithiStart(tv,ref),end:findCross(phaseAt,((tv+1)*12)%360,ref),tzd};
+}
+/* kept for anything still calling it directly — same as basisTimeRange('ti',...). */
+function tithiTimeRange(y,m,d,pl){
+  const r=basisTimeRange('ti',y,m,d,pl);
+  return {from:fmtCrossFull(r.start,r.tzd), to:fmtCrossFull(r.end,r.tzd)};
+}
+/* one "⏱ starts/ends" line for a basis group on a given day's row. events is
+   the list of {text,basis} entries sharing that basis (used only to detect
+   an eclipse for the tithi end-label). spill is set when this line is being
+   shown on a day the event doesn't natively belong to (per sunrise-rule) but
+   whose civil-time span it still touches — see renderSpecialDays. */
+function basisTimeLine(basis,r,events,spill){
+  const isTithiLike=basis==='ti'||basis==='tiEve'||basis==='tiNight';
+  const hasEclipse=basis==='ti'&&events.some(e=>e.text.indexOf('கிரகணம்')>=0);
+  const startLabel=isTithiLike?T('திதி தொடக்கம்','Tithi starts')
+    :basis==='ni'?T('நட்சத்திரம் தொடக்கம்','Nakshatram starts')
+    :T('தமிழ் தேதி தொடக்கம்','Tamil date starts');
+  const endLabel=isTithiLike
+    ?(hasEclipse?T('திதி முடிவு / கிரகண உச்சம்','Tithi ends / eclipse peak'):T('திதி முடிவு','Tithi ends'))
+    :basis==='ni'?T('நட்சத்திரம் முடிவு','Nakshatram ends')
+    :T('தமிழ் தேதி முடிவு','Tamil date ends');
+  const note=spill==='fromYesterday'
+    ? ` <span class="spl-note">(${T('முந்தைய நாள் தொடங்கியது','started the previous day')})</span>`
+    : spill==='intoTomorrow'
+    ? ` <span class="spl-note">(${T('அடுத்த நாளும் தொடரும்','continues into the next day')})</span>`
+    : '';
+  return `<div class="wd">⏱ ${startLabel}: <b>${fmtCrossFull(r.start,r.tzd)}</b> · ${endLabel}: <b>${fmtCrossFull(r.end,r.tzd)}</b>${note}</div>`;
 }
 function renderSpecialDays(){
   const pl=getPlace('sPlace');
@@ -2524,32 +2592,78 @@ function renderSpecialDays(){
   const now=new Date();
   const first=new Date(calY,calM,1), ndays=new Date(calY,calM+1,0).getDate();
   document.getElementById('calTitle').textContent=MN_EN[calM]+" "+calY;
-  let h=["ஞா","தி","செ","பு","வி","வெ","ச"].map(w=>`<div class="calwd">${w}</div>`).join('');
-  for(let i=0;i<first.getDay();i++) h+=`<div class="calcell empty"></div>`;
-  let monthEvents=[];
+
+  // pass 1 — each day's own panchang + basis-tagged events
+  const days=[];
   for(let d=1;d<=ndays;d++){
     const tzd=tzFor(pl.tzr!==undefined?pl.tzr:pl.tz,new Date(calY,calM,d,12));
     const p=computePanchang(calY,calM+1,d,pl.lat,pl.lon,tzd,true);
-    const evAll=specialsFor(p), ev=calFilterEv(evAll,catKey);
+    days.push({d,p,full:specialsForFull(p),extra:[]});
+  }
+
+  // pass 2 — tithis/nakshatrams run 20-31h, so they routinely straddle
+  // midnight and are only "attributed" to one civil day by the sunrise
+  // rule. Find each basis's real local start/end; if it began the previous
+  // civil day or runs into the next one, surface the same events there too,
+  // with their real times — UNLESS that neighbour already shows the exact
+  // same occurrence natively (a span long enough to cover two sunrises).
+  // "Same basis" alone isn't enough to detect that — the neighbour's own
+  // tithi/nakshatram is usually a *different*, adjacent one (e.g. Deepavali
+  // on day d, Amavasai on day d+1 are both basis 'ti' but different tithis)
+  // — so this compares actual start times, not just the basis label.
+  const rangeCache={};
+  const rangeFor=(basis,d)=>{
+    const key=basis+d;
+    if(!(key in rangeCache)){
+      const r=basisTimeRange(basis,calY,calM+1,d,pl);
+      rangeCache[key]={...r,startKey:jdLocalDayKey(r.start,r.tzd),endKey:jdLocalDayKey(r.end,r.tzd)};
+    }
+    return rangeCache[key];
+  };
+  const dayKey=d=>calY*10000+(calM+1)*100+d;
+  const sameOccurrence=(basis,d1,d2)=>{
+    const a=rangeFor(basis,d1), b=rangeFor(basis,d2);
+    return a.start!=null&&b.start!=null&&Math.abs(a.start-b.start)<0.0007; // ~1 minute
+  };
+  days.forEach(({d,full})=>{
+    const bases=[...new Set(full.map(e=>e.basis).filter(Boolean))];
+    bases.forEach(basis=>{
+      const r=rangeFor(basis,d), own=dayKey(d), events=full.filter(e=>e.basis===basis);
+      if(r.startKey!=null&&r.startKey!==own&&d-1>=1){
+        const prevDay=days[d-2];
+        const alreadyNative=prevDay.full.some(e=>e.basis===basis)&&sameOccurrence(basis,d,d-1);
+        if(!alreadyNative) prevDay.extra.push({basis,events,range:r,spill:'intoTomorrow'});
+      }
+      if(r.endKey!=null&&r.endKey!==own&&d+1<=ndays){
+        const nextDay=days[d];
+        const alreadyNative=nextDay.full.some(e=>e.basis===basis)&&sameOccurrence(basis,d,d+1);
+        if(!alreadyNative) nextDay.extra.push({basis,events,range:r,spill:'fromYesterday'});
+      }
+    });
+  });
+
+  // pass 3 — render the month grid + the detail list, folding in spillover
+  let h=["ஞா","தி","செ","பு","வி","வெ","ச"].map(w=>`<div class="calwd">${w}</div>`).join('');
+  for(let i=0;i<first.getDay();i++) h+=`<div class="calcell empty"></div>`;
+  let monthEvents=[];
+  days.forEach(({d,p,full,extra})=>{
+    const evAllSet=[...new Set([...full.map(e=>e.text),...extra.flatMap(x=>x.events.map(e=>e.text))])];
+    const ev=calFilterEv(evAllSet,catKey);
     const isToday=(calY===now.getFullYear()&&calM===now.getMonth()&&d===now.getDate());
     const short=ev.slice(0,3).map(e=>`<span class="ev">${e.split('(')[0].trim()}</span>`).join('');
     h+=`<div class="calcell${isToday?' today':''}"${ev.length?` onclick="focusDay(${d})"`:''}>
       <span class="gd">${d}</span> <span class="td2">${p.td.month.slice(0,4)} ${p.td.day}</span>${short}${ev.length>3?'<span class="ev">…</span>':''}</div>`;
-    if(ev.length) monthEvents.push({d,ev,evAll,td:p.td});
-  }
+    if(ev.length) monthEvents.push({d,ev,td:p.td,full,extra});
+  });
   document.getElementById('calGrid').innerHTML=h;
   document.getElementById('calListTitle').textContent="🪔 "+MN_EN[calM]+" "+calY+" — சிறப்பு நாட்கள் விவரம்";
   if(monthEvents.length){
     document.getElementById('splOut').innerHTML=monthEvents.map(o=>{
-      let timeLine='';
-      const hasAmavasai=o.evAll.some(e=>e.indexOf('அமாவாசை')>=0), hasPournami=o.evAll.some(e=>e.indexOf('பௌர்ணமி')>=0);
-      const hasEclipse=o.evAll.some(e=>e.indexOf('கிரகணம்')>=0);
-      if(hasAmavasai||hasPournami){
-        const tr=tithiTimeRange(calY,calM+1,o.d,pl);
-        const endLabel=hasEclipse?T('திதி முடிவு / கிரகண உச்சம்','Tithi ends / eclipse peak'):T('திதி முடிவு','Tithi ends');
-        timeLine+=`<div class="wd">⏱ ${T('திதி தொடக்கம்','Tithi starts')}: <b>${tr.from}</b> · ${endLabel}: <b>${tr.to}</b></div>`;
-      }
-      return `<div class="row" id="spl-day-${o.d}"><div class="dt">${String(o.d).padStart(2,'0')}-${String(calM+1).padStart(2,'0')}-${calY}<div class="wd">${WDAY[new Date(calY,calM,o.d).getDay()]} · ${o.td.month} ${o.td.day}</div>${timeLine}
+      const ownBases=[...new Set(o.full.map(e=>e.basis).filter(Boolean))];
+      const timeLines=ownBases.map(basis=>basisTimeLine(basis,rangeFor(basis,o.d),o.full.filter(e=>e.basis===basis),null))
+        .concat(o.extra.map(x=>basisTimeLine(x.basis,x.range,x.events,x.spill)))
+        .join('');
+      return `<div class="row" id="spl-day-${o.d}"><div class="dt">${String(o.d).padStart(2,'0')}-${String(calM+1).padStart(2,'0')}-${calY}<div class="wd">${WDAY[new Date(calY,calM,o.d).getDay()]} · ${o.td.month} ${o.td.day}</div>${timeLines}
          <button class="ics-day" onclick="addDayICS(${calY},${calM+1},${o.d})" title="${T('இந்நாளை iCal/ICS காலண்டரில் சேர்','Add this day to iCal/ICS calendar')}">🗓️ ${T('iCal/ICS சேர்','Add to iCal/ICS')}</button></div>
        <div>${o.ev.map(e=>occBadge(e)).join(' ')}</div></div>`;
     }).join('');
