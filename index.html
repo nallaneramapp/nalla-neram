@@ -1778,14 +1778,28 @@ function jdLocalDayKey(jd,tz){ if(jd==null) return null;
   return dt.getUTCFullYear()*10000+(dt.getUTCMonth()+1)*100+dt.getUTCDate();
 }
 
-function tamilDate(sunSidLon,y,m,d){
+/* exact JD of the sankranti — when the sun's real (non-averaged) sidereal
+   longitude crosses month-boundary mi*30 — nearest before jdRef. The sun's
+   apparent speed varies through the year (slower near aphelion ~Jul, faster
+   near perihelion ~Jan) because Earth's orbit is elliptical, so inferring
+   elapsed days from a constant average rate (360°/365.25d) under/over-counts
+   by a few percent — worst right around aphelion. Search for the true
+   crossing instead; deg (0.9856026°/day) is only used to bound the search. */
+function sankrantiJD(mi,jdRef){
+  const estDays=rev(sunSidAt(jdRef)-mi*30)/0.9856026;
+  return findCross(sunSidAt,mi*30,jdRef-estDays-5,(estDays+10)*24);
+}
+function tamilDate(sunSidLon,y,m,d,jdRef){
   const mi=Math.floor(sunSidLon/30);        // 0=Mesha=Chithirai
   const deg=sunSidLon-mi*30;
-  const day=Math.floor(deg/0.9856026)+1;    // approx days since sankranti
+  const jdSank=sankrantiJD(mi,jdRef);
+  // day number = whole sunrise-to-sunrise days elapsed since the true
+  // sankranti moment, +1 (the sunrise-day the sankranti falls in is day 1)
+  const day=jdSank!=null?Math.floor(jdRef-jdSank)+1:Math.floor(deg/0.9856026)+1;
   // Tamil year: starts mid-April (Chithirai 1)
   let ty=y; if(m<4||(m===4&&d<14)) ty=y-1;
   const yname=YEARS60[((ty-1987)%60+60)%60];
-  return {monthIdx:mi, month:TMONTH[mi], monthEn:TMONTH_EN[mi], day, yearName:yname, tamilYearStart:ty};
+  return {monthIdx:mi, month:TMONTH[mi], monthEn:TMONTH_EN[mi], day, yearName:yname, tamilYearStart:ty, sankrantiJD:jdSank};
 }
 
 function computePanchang(y,m,d,lat,lonE,tz,light){
@@ -1804,7 +1818,7 @@ function computePanchang(y,m,d,lat,lonE,tz,light){
   const yi=Math.floor(yogaAngAt(jdSR)/(360/27));
   const ki=Math.floor(phase/6);             // 0..59
   let karana; if(ki===0)karana=KAR_F[3]; else if(ki>=57)karana=KAR_F[ki-57]; else karana=KAR_M[(ki-1)%7];
-  const td=tamilDate(sunSid,y,m,d);
+  const td=tamilDate(sunSid,y,m,d,jdSR);
   const dayLen=set-rise, seg=dayLen/8;
   const segT=n=>({from:rise+(n-1)*seg, to:rise+n*seg});
   const rahu=segT(RAHU_SEG[wd]), yama=segT(YAMA_SEG[wd]), kuli=segT(KULI_SEG[wd]);
@@ -1833,16 +1847,14 @@ function tithiStart(ti,jdSR){ return findCross(phaseAt,(ti*12)%360,jdSR-1.6,48);
 /* start of the day's nakshatram — mirrors tithiStart; nakshatram lasts up
    to ~30.5h so search further back than the tithi case. */
 function nakStart(ni,jdSR){ return findCross(moonSidAt,(ni*(360/27))%360,jdSR-1.4,48); }
-/* start/end of the day's Tamil solar-calendar date (td.day within td.month) —
-   mirrors tithiStart/nakStart, against the sun's sidereal longitude instead
-   of the moon's. Uses the same "~0.9856°/day since sankranti" approximation
-   tamilDate() already uses for the day number, so the boundary shown stays
-   consistent with the day number already displayed; day 1 of a month is an
-   exact sankranti (rasi-transition) crossing, the most astronomically real
-   of these boundaries. Tamil days run close to 24h, so a much smaller search
-   window than tithi/nakshatram is enough. */
-function tamilDayStart(mi,tday,jdSR){ return findCross(sunSidAt,rev(mi*30+(tday-1)*0.9856026),jdSR-1.2,40); }
-function tamilDayEnd(mi,tday,jdSR){ return findCross(sunSidAt,rev(mi*30+tday*0.9856026),jdSR,40); }
+/* start/end of the day's Tamil solar-calendar date (td.day within td.month).
+   Day 1 of a month starts at the exact sankranti (rasi-transition) crossing
+   — the only boundary within a month that's astronomically real; every
+   later day boundary is just the next sunrise-to-sunrise civil day, one day
+   on from that crossing (matching how tamilDate() now counts td.day itself),
+   not a further sun-longitude crossing. */
+function tamilDayStart(tday,jdSank){ return jdSank!=null?jdSank+(tday-1):null; }
+function tamilDayEnd(tday,jdSank){ return jdSank!=null?jdSank+tday:null; }
 /* Full, tagged version of specialsFor: each entry also records which single-day
    astronomical snapshot it's keyed to — 'ti' (the sunrise tithi, p.ti), 'ni'
    (the sunrise nakshatram, p.ni), 'td' (the Tamil solar calendar date,
@@ -2554,7 +2566,7 @@ function basisTimeRange(basis,y,m,d,pl){
   const p=computePanchang(y,m,d,pl.lat,pl.lon,tzd,false);
   if(basis==='ti') return {start:tithiStart(p.ti,p.jdSR),end:p.tithiEnd,tzd};
   if(basis==='ni') return {start:nakStart(p.ni,p.jdSR),end:p.nakEnd,tzd};
-  if(basis==='td') return {start:tamilDayStart(p.td.monthIdx,p.td.day,p.jdSR),end:tamilDayEnd(p.td.monthIdx,p.td.day,p.jdSR),tzd};
+  if(basis==='td') return {start:tamilDayStart(p.td.day,p.td.sankrantiJD),end:tamilDayEnd(p.td.day,p.td.sankrantiJD),tzd};
   const ref=basis==='tiEve'?julianDay(y,m,d,18-tzd):julianDay(y,m,d,20.5-tzd);
   const tv=basis==='tiEve'?p.tiEve:p.tiNight;
   return {start:tithiStart(tv,ref),end:findCross(phaseAt,((tv+1)*12)%360,ref),tzd};
@@ -3074,7 +3086,7 @@ function renderJathagam(){
   const moonSid=g["சந்திரன்"];
   const nakI=Math.floor(moonSid/(360/27)), padam=Math.floor((moonSid%(360/27))/(360/108))+1;
   const rasiI=Math.floor(moonSid/30), lagI=Math.floor(lag/30);
-  const td=tamilDate(sidereal(sunPos(jd).lon,jd),y,m,d);
+  const td=tamilDate(sidereal(sunPos(jd).lon,jd),y,m,d,jd);
   // charts
   const rp={},np={};
   const put=(o,i,l)=>{(o[i]=o[i]||[]).push(l);};
