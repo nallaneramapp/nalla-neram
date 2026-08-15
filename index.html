@@ -86,7 +86,10 @@ window.NN_CONFIG = {
   modulePath:         '/lib/nn-account.js',
   icsEndpoint:        true,   // set true after deploying api/ics.js — makes iPhone calendar downloads reliable
   trialDays:          30,     // length of the card-less free trial (started explicitly by the member)
-  trialWarnDays:      5       // show the "trial ending" reminder this many days before it ends
+  trialWarnDays:      5,      // show the "trial ending" reminder this many days before it ends
+  promoFreeAll:       true    // temporary: all Pro features open to everyone. Sign-in still
+                               // required to save Kudumba Palan profiles. Flip to false to
+                               // restore the normal paywall.
 };
 </script>
 <style>
@@ -1130,7 +1133,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
   <div class="app-shell">
     <div class="app-tabbar">
       <button id="atb1" class="active" onclick="showTab(1)"><span class="ta-only">🪔 சிறப்பு நாட்கள்</span><span class="en-only">🪔 Festivals</span></button>
-      <button id="atb3" onclick="showTab(3)"><span class="ta-only">👨‍👩‍👧‍👦 குடும்ப பலன்</span><span class="en-only">👨‍👩‍👧‍👦 Family Plan</span> <span class="lockbadge">PRO</span></button>
+      <button id="atb3" onclick="showTab(3)"><span class="ta-only">👨‍👩‍👧‍👦 குடும்ப பலன்</span><span class="en-only">👨‍👩‍👧‍👦 Family Plan</span> <span class="lockbadge" id="lb3b">PRO</span></button>
       <button id="atb2" onclick="showTab(2)"><span class="ta-only">🔯 ஜாதக ஆலோசனை</span><span class="en-only">🔯 Jathagam</span> <span class="badge-enq">✉</span></button>
     </div>
     <div class="app-body">
@@ -1202,6 +1205,10 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
           <p style="font-size:.88rem;margin-bottom:10px">
             <span class="ta-only">ஒவ்வொருவரின் <b>பிறந்த தேதி, நேரம், ஊர்</b> ஒருமுறை பதிவு செய்யுங்கள் — தினமும் திறக்கும்போது அவரவருக்கான தனிப்பட்ட பலன் (தாராபலம், சந்திராஷ்டமம், தசை-புக்தி, அன்றைய சிறப்பு) தானாகக் காட்டப்படும்.</span>
             <span class="en-only">Register each person's <b>date, time and city of birth</b> once — every time you open the app, each of them gets their own reading (tara balam, chandrashtama, dasa-bhukti and the day's specials) calculated automatically.</span>
+          </p>
+          <p id="rSignInNote" style="display:none;font-size:.86rem;margin-bottom:10px;color:var(--ink2)">
+            <span class="ta-only">குடும்ப விவரங்கள் சேமிக்க உள்நுழையவும் — இது இலவசம்.</span>
+            <span class="en-only">Sign in to save your family's info — this is free.</span>
           </p>
           <div class="controls" id="rModeToggle" style="margin-bottom:8px;display:none">
             <label style="flex-direction:row;align-items:center;gap:6px">
@@ -3689,6 +3696,14 @@ function renderTrialBanner(pro){
 }
 /* Pro status: server truth when live (trialing counts as Pro), localStorage demo otherwise. */
 function isPro(){
+  if(window.NN_CONFIG && window.NN_CONFIG.promoFreeAll) return true;
+  if(useServer()) return _pro;
+  const st=trialState(); return st==='trialing'||st==='active';
+}
+/* Genuine paid/trialing status — ignores promoFreeAll. Use this (not isPro()) for any UI
+   that claims someone is a paying/trialing member, so a promo-mode free user never sees a
+   "Pro"/"trial" badge while a real Stripe subscriber still sees accurate billing status. */
+function _realPro(){
   if(useServer()) return _pro;
   const st=trialState(); return st==='trialing'||st==='active';
 }
@@ -3700,9 +3715,10 @@ async function nnBoot(){
       s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
     window.NN = await import(window.NN_CONFIG.modulePath || '/lib/nn-account.js');
     await window.NN.nnInit();
-    window.NN.nnOnAuthChange(()=>refreshAccountUI());
+    window.NN.nnOnAuthChange(()=>{ refreshAccountUI(); savePendingProfileOnSignIn(); migrateLocalProfilesOnSignIn(); });
     await reloadProfiles();
     await refreshAccountUI();
+    await migrateLocalProfilesOnSignIn();
   }catch(e){ console.error('account boot failed — staying in demo mode',e); }
 }
 /* re-sync everything the account state touches */
@@ -3711,6 +3727,7 @@ async function refreshAccountUI(){
   renderAuthBtn();
   applyProState();
   applyAdminUI();
+  updateSignInNudge();
   try{ renderTodayBanner(); renderPanchang(); }catch(e){}
   renderChandraOverview();
   const n=currentTab();
@@ -3733,7 +3750,7 @@ function renderAuthBtn(){
     b.onclick=(e)=>{ e.stopPropagation(); menu.classList.toggle('show'); };
     /* populate the menu (labels follow the language) */
     document.getElementById('nnMenuEmail').textContent=email;
-    const pro=isPro();
+    const pro=_realPro();
     document.getElementById('nnMenuStatus').innerHTML = pro
       ? '<span class="nn-pro">✦ '+(trialState()==='trialing'?(T('Pro முயற்சி','Pro trial')+(_trialDaysTxt())):T('Pro உறுப்பினர்','Pro Member'))+'</span>'
       : '<span class="nn-free">'+T('இலவச திட்டம்','Free plan')+'</span>';
@@ -3751,6 +3768,14 @@ function nnRequireSignIn(){
   if(useServer() && !window.NN.nnSignedIn()){ window.NN.nnSignIn(); return false; }
   return true;
 }
+/* During the promo period, Kudumba Palan is open to everyone but saving still needs
+   sign-in (so profiles persist to the account, not just localStorage) — nudge with
+   copy that reads as data-continuity, not an upgrade pitch. */
+function updateSignInNudge(){
+  const el=document.getElementById('rSignInNote'); if(!el) return;
+  const show=!!(window.NN_CONFIG && window.NN_CONFIG.promoFreeAll) && useServer() && !nnIsSignedIn();
+  el.style.display = show ? '' : 'none';
+}
 
 /* ---- family profiles: server when live, localStorage otherwise ---- */
 function lsLoadProfiles(){ try{ return JSON.parse(localStorage.getItem('tpProfiles')||'[]'); }catch(e){ return []; } }
@@ -3762,6 +3787,21 @@ async function reloadProfiles(){
   if(useServer()){ try{ _profiles = window.NN.nnSignedIn() ? await window.NN.nnProfiles.list() : []; }catch(e){ _profiles=[]; } }
   else _profiles=lsLoadProfiles();
   try{ renderProfiles(); enhanceProfiles(); }catch(e){}
+}
+/* One-time move of any profiles saved to localStorage before sign-in into the account,
+   so signing in doesn't strand a family's data. Guarded by emptying the local array on
+   success — a second run finds nothing left to migrate. */
+async function migrateLocalProfilesOnSignIn(){
+  if(!useServer() || !window.NN.nnSignedIn()) return;
+  let local=[]; try{ local=JSON.parse(localStorage.getItem('tpProfiles')||'[]'); }catch(e){}
+  if(!local.length) return;
+  try{
+    for(const p of local){ await window.NN.nnProfiles.add(p); }
+    localStorage.removeItem('tpProfiles');
+    toast(T('உள்ளூர் சேமிப்பிலிருந்த குடும்ப விவரங்கள் உங்கள் கணக்கிற்கு மாற்றப்பட்டன',
+             'Your saved family profiles were moved into your account'));
+    await reloadProfiles();
+  }catch(e){ console.error('profile migration failed', e); }
 }
 function rModeSwitch(){
   const star=document.getElementById('rModeStar').checked;
@@ -3788,10 +3828,10 @@ function applyAdminUI(){
     rModeSwitch();
   }
 }
+let _pendingProfile=null;
 function addProfile(){
   const name=document.getElementById('rName').value.trim();
   if(!name){ alert(T('பெயர் தேவை','Name is required')); return; }
-  if(useServer() && !nnRequireSignIn()) return;
   const star=document.getElementById('rModeStar').checked;
   let p;
   if(star){
@@ -3804,9 +3844,22 @@ function addProfile(){
     const [ry,rm,rd]=dv.split('-').map(Number), btz=tzFor(c[3],new Date(ry,rm-1,rd,12));
     p={name,dv,tv,lat:c[1],lon:c[2],tz:btz,tzr:c[3],pn:c[0]};
   }
+  /* not signed in: stash what they just filled in and open sign-in — savePendingProfileOnSignIn()
+     finishes the save automatically once they're back, so they don't have to redo the form. */
+  if(useServer() && !nnRequireSignIn()){ _pendingProfile=p; return; }
   document.getElementById('rName').value='';
   if(useServer()){ window.NN.nnProfiles.add(p).then(reloadProfiles); }
   else { const ps=lsLoadProfiles(); ps.push(p); lsSaveProfiles(ps); _profiles=ps; renderProfiles(); enhanceProfiles(); }
+}
+async function savePendingProfileOnSignIn(){
+  if(!_pendingProfile || !useServer() || !window.NN.nnSignedIn()) return;
+  const p=_pendingProfile; _pendingProfile=null;
+  try{
+    await window.NN.nnProfiles.add(p);
+    document.getElementById('rName').value='';
+    await reloadProfiles();
+    toast(T('✦ '+p.name+' பதிவு சேமிக்கப்பட்டது','✦ '+p.name+' saved'));
+  }catch(e){ console.error('pending profile save failed', e); _pendingProfile=p; }
 }
 function delProfile(i){
   const pr=loadProfiles()[i];
@@ -4092,7 +4145,7 @@ function showTab(n,fromHash){
   for(let i=1;i<=3;i++){ const t=document.getElementById('tab'+i); if(t) t.classList.toggle('active',i===n); }
   setActiveNav(n);
   if(n===1) renderSpecialDays();          /* festivals — always free */
-  if(n===3){ if(isPro()){ renderProfiles(); enhanceProfiles(); } }
+  if(n===3){ if(isPro()){ renderProfiles(); enhanceProfiles(); } updateSignInNudge(); }
   /* scroll the app into view so the chosen tab is actually shown (crucial on mobile) */
   if(!fromHash){ const a=document.getElementById('app'); if(a) setTimeout(()=>a.scrollIntoView({behavior:'smooth',block:'start'}),40); }
 }
@@ -4171,30 +4224,31 @@ function refreshCurrent(){
 }
 
 function applyProState(){
-  const pro=isPro();
+  const pro=isPro(), realPro=_realPro();
   /* Pro members see the app, not the sales pitch — hide all marketing chrome. */
   document.body.classList.toggle('nn-pro-view', pro);
   const mh=document.getElementById('memberHi');
-  if(mh && pro){
+  if(mh && realPro){
     let nm=''; try{ if(useServer()&&window.NN.nnSignedIn()){ const u=window.NN.nnUser(); nm=(u&&u.firstName)?', '+u.firstName:''; } }catch(e){}
     const tier = trialState()==='trialing' ? T('Pro முயற்சி','Pro trial') : T('Pro உறுப்பினர்','Pro member');
     let so=''; if(nnIsSignedIn()) so='<a class="mh-signout" onclick="try{window.NN.nnSignOut()}catch(e){}">↪ '+T('வெளியேறுக','Sign out')+'</a>';
     mh.innerHTML='<span>✦ <b>'+tier+nm+'</b> — '+
       T('உங்கள் பஞ்சாங்கம் &amp; குடும்ப பலன் தயார். 🙏','your panchangam &amp; family plan are ready below. 🙏')+'</span>'+so;
-  }
+  } else if(mh){ mh.innerHTML=''; }
   const l3=document.getElementById('lb3'); if(l3) l3.textContent=pro?'✓':'PRO';
+  const l3b=document.getElementById('lb3b'); if(l3b) l3b.textContent=pro?'✓':'PRO';
   const b=document.getElementById('goProBtn');
   if(b){ if(pro){ b.textContent='✦ '+T('Pro உறுப்பினர்','Pro Member'); b.classList.add('ispro'); b.onclick=()=>{}; }
          else { b.textContent='✦ Go Pro'; b.classList.remove('ispro'); b.onclick=()=>openPaywall('all'); } }
   renderTrialBanner(pro);
   const lt=document.getElementById('licTag');
   if(lt){
-    if(pro && useServer()){
+    if(realPro && useServer()){
       lt.innerHTML=T('✦ Pro உறுப்பினர் ✓ · ','✦ Pro Member ✓ · ')+
         '<a onclick="window.NN.nnOpenBillingPortal()" style="color:var(--gold2);cursor:pointer;text-decoration:underline">'+
         T('சந்தாவை நிர்வகி','Manage subscription')+'</a>';
     } else {
-      lt.textContent=pro?T('✦ Pro உறுப்பினர் ✓','✦ Pro Member ✓'):T('Free — பஞ்சாங்கம் எப்போதும் இலவசம்','Free plan — Panchangam always free');
+      lt.textContent=realPro?T('✦ Pro உறுப்பினர் ✓','✦ Pro Member ✓'):T('Free — பஞ்சாங்கம் எப்போதும் இலவசம்','Free plan — Panchangam always free');
     }
   }
   if(pro) document.querySelectorAll('.preview-ribbon').forEach(r=>r.remove());
@@ -4263,6 +4317,7 @@ function init(){
   renderTodayBanner(); renderPanchang();
   try{ renderSpecialDays(); }catch(e){}   /* festivals tab is free + open by default */
   applyProState();
+  updateSignInNudge();
   applyLocalPrice();
   renderHeroLive();
   watchChandra();
