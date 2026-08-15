@@ -2119,10 +2119,11 @@ function renderPanchang(){
   }
   const caR=chandrashtama(p.moonRasi);
   h+=`<h3>🌙 சந்திராஷ்டமம் — நட்சத்திர அடிப்படை (Chandrashtama)</h3>
+  ${PIT("ராசி அடிப்படையில் (Rasi-based)", RASI[caR.rasi]+" ராசிக்காரர்களுக்கு (~2½ நாள்)", RASI_EN[caR.rasi]+" rasi — broader window, about 2.5 days")}
   <table><tr><th>சந்திரன் கடக்கும் நட்சத்திரம்</th><th>யாருக்கு சந்திராஷ்டமம் (ஜன்ம நட்சத்திரம்)</th><th>⏱ துவக்கம் → முடிவு</th></tr>
   ${caRows.map(r=>`<tr class="brow"><td>${NAK[r.t]}</td><td><b>${NAK[r.a]}</b> நட்சத்திரக்காரர்கள்</td><td>${fmtJD(r.sp.start,p.tz)} → ${fmtJD(r.sp.end,p.tz)}</td></tr>`).join('')}
   </table>
-  <div class="en" style="font-size:.78rem">ஜன்ம நட்சத்திரத்திலிருந்து 17-வது நட்சத்திரத்தை சந்திரன் கடக்கும் முழு காலம் (~1 நாள்) — இதுவே கூர்மையான சந்திராஷ்டம நேரம். பொதுவான (ராசி அடிப்படை) சந்திராஷ்டமம்: ${RASI[caR.rasi]} ராசி முழுவதற்கும் ~2½ நாள். Whole-star transit of the 17th star from janma natchathiram — the sharp window; the broader rasi-based window covers ${RASI_EN[caR.rasi]} for ~2.5 days.</div>`;
+  <div class="en" style="font-size:.78rem">ஜன்ம நட்சத்திரத்திலிருந்து 17-வது நட்சத்திரத்தை சந்திரன் கடக்கும் முழு காலம் (~1 நாள்) — இதுவே கூர்மையான சந்திராஷ்டம நேரம். மேலே உள்ள ராசி அடிப்படை எண்ணிக்கை இதைவிட பரந்தது. Whole-star transit of the 17th star from janma natchathiram — the sharp window; the rasi-based figure above is the broader, simpler classification.</div>`;
   if(ev.length) h+=`<h3>🪔 இன்றைய சிறப்பு (Specials)</h3><div>${ev.map(e=>occBadge(e)).join(' ')}</div>
   <button class="btn" style="margin-top:8px" onclick="gotoCalendarDay(${y},${m},${d})">🗓️ ${T('இந்நாளின் தொடக்க/முடிவு நேரம் காலண்டரில் காண்க','View start/end timing for this day in the calendar')} →</button>`;
   h+=`</div>`;
