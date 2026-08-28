@@ -2678,6 +2678,18 @@ function renderSpecialDays(){
   days.forEach(({d,full})=>{
     const bases=[...new Set(full.map(e=>e.basis).filter(Boolean))];
     bases.forEach(basis=>{
+      // 'td' (Tamil solar calendar day) is deliberately excluded here. Unlike
+      // a tithi/nakshatram -- which genuinely is still "in effect" into the
+      // next civil day and is meaningful to show on both -- a Tamil solar day
+      // is a pure sunrise-to-sunrise civil-day label with no such ambiguity:
+      // td.day/td.month already say unambiguously which single civil day it
+      // belongs to. tamilDayStart() returns the *sankranti* moment itself,
+      // which is often mid-morning; jdLocalDayKey() reads it by *civil*
+      // midnight, so any sankranti after sunrise (the common case) lands on
+      // the *previous* calendar date and would spill "month begins"/Pongal/
+      // New Year/etc. onto the wrong day -- exactly what made Purattasi
+      // wrongly appear to start Sep 17, 2026 instead of the correct Sep 18.
+      if(basis==='td') return;
       const r=rangeFor(basis,d), own=dayKey(d), events=full.filter(e=>e.basis===basis);
       if(r.startKey!=null&&r.startKey!==own&&d-1>=1){
         const prevDay=days[d-2];
