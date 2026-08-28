@@ -1873,8 +1873,38 @@ function tamilDayEnd(tday,jdSank){ return jdSank!=null?jdSank+tday:null; }
    working unchanged; the tag is used by renderSpecialDays to show each
    event's real start/end time and to surface it on every civil day it
    actually touches (these spans routinely straddle midnight). */
+/* Solar rasi (Tamil month) that the CURRENT lunar month is named for:
+   the rasi the sun occupied at this cycle's own shukla-pratipada (tithi
+   index 0, the New Moon moment) -- NOT whatever solar month today's
+   calendar date happens to sit in. A solar month (~29.4-30.9d) and a
+   synodic/tithi month (~29.3-29.8d) are nearly the same length but rarely
+   aligned, so it's routine for the trailing tithis of the *outgoing*
+   lunar month to spill into the first days of the next solar month. That
+   spillover is what wrongly surfaced Navaratri/Ayudha Pooja/Vijayadasami
+   on Sep 19-21, 2026 (still the outgoing Aavani-born cycle's navami/
+   dashami tithis, even though the date had already rolled into
+   Purattasi) instead of their real Oct 11/19/20 dates (the cycle that
+   actually began, New-Moon, while the sun was in Purattasi).
+
+   IMPORTANT -- this is NOT a safe drop-in replacement for p.td.monthIdx
+   on every tithi-gated festival below. It was verified (against
+   drikpanchang/timeanddate) to fix Navaratri/Ayudha Poojai/Vijayadasami
+   specifically for 2026, but trying it on the other krishna-paksha
+   tithi festivals (Maha Shivaratri, Deepavali, Akshaya Tritiyai) shifted
+   them to the WRONG month and made Krishna Jayanthi disappear entirely --
+   those follow a different masa-naming convention (adhika-masa /
+   purnimanta effects) that this simple "rasi at cycle start" rule
+   doesn't capture. Keep this scoped to the three lines below unless a
+   festival's date has been independently re-verified against a real
+   source first. */
+function lunarMonthIdx(p){
+  const jdNewMoon=findCross(phaseAt,0,p.jdSR-(p.ti*1.1+3),(p.ti*1.1+9)*24);
+  if(jdNewMoon==null) return p.td.monthIdx; // shouldn't happen; fall back to old behavior
+  return Math.floor(sunSidAt(jdNewMoon)/30);
+}
 function specialsForFull(p){
   const ev=[], mi=p.td.monthIdx, ti=p.ti, ni=p.ni, wd=p.wd, tday=p.td.day;
+  const lmi=lunarMonthIdx(p); // solar rasi the current tithi's lunar month belongs to -- see lunarMonthIdx() above
   const push=(text,basis)=>ev.push({text,basis:basis||null});
   if(tday===1) push(TMONTH[mi]+" மாத பிறப்பு ("+TMONTH_EN[mi]+" month begins)",'td');
   if(mi===0&&tday===1) push("🎉 தமிழ் புத்தாண்டு (Tamil New Year)",'td');
@@ -1907,9 +1937,9 @@ function specialsForFull(p){
   if(ni===11&&mi===11) push("💐 பங்குனி உத்திரம் (Panguni Uthiram)",'ni');
   if(ni===15&&mi===1) push("🔱 வைகாசி விசாகம் (Vaigasi Visagam)",'ni');
   if(ni===10&&mi===3) push("🌺 ஆடிப்பூரம் (Aadi Pooram)",'ni');
-  if(mi===5&&ti===0) push("🥁 நவராத்திரி ஆரம்பம் (Navaratri begins)",'ti');
-  if(mi===5&&ti===8) push("📚 சரஸ்வதி பூஜை / ஆயுத பூஜை (Saraswathi / Ayudha Poojai)",'ti');
-  if(mi===5&&ti===9) push("🏹 விஜயதசமி (Vijayadasami)",'ti');
+  if(lmi===5&&ti===0) push("🥁 நவராத்திரி ஆரம்பம் (Navaratri begins)",'ti');
+  if(lmi===5&&ti===8) push("📚 சரஸ்வதி பூஜை / ஆயுத பூஜை (Saraswathi / Ayudha Poojai)",'ti');
+  if(lmi===5&&ti===9) push("🏹 விஜயதசமி (Vijayadasami)",'ti');
   if(mi===4&&ti===22) push("🦚 கிருஷ்ண ஜெயந்தி / கோகுலாஷ்டமி (Krishna Jayanthi)",'ti');
   if(mi===6&&ti===28) push("🪔 தீபாவளி (Deepavali)",'ti');
   if(mi===10&&ti===28) push("🔱 மகா சிவராத்திரி (Maha Shivaratri)",'ti');
@@ -1920,7 +1950,7 @@ function specialsForFull(p){
   if(mi===9&&wd===5) push("தை வெள்ளி (Thai Velli)");
   if(mi===5&&wd===6) push("புரட்டாசி சனி (Purattasi Sani) — பெருமாள் வழிபாடு");
   if(mi===4&&wd===5&&ti>=8&&ti<=13) push("🪙 வரலட்சுமி விரதம் (Varalakshmi Viratham)");
-  if(mi===8) if(ti===0) push("மார்கழி பஜனை / திருப்பாவை காலம் தொடக்கம்",'ti');
+  if(mi===8&&tday===1) push("மார்கழி பஜனை / திருப்பாவை காலம் தொடக்கம்",'td');
   const seen=new Set(), out=[];
   for(const e of ev){ if(seen.has(e.text)) continue; seen.add(e.text); out.push(e); }
   return out;
