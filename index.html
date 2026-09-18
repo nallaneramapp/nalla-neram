@@ -10,6 +10,8 @@
 <meta name="keywords" content="Nalla Neram, Tamil calendar, today Tamil calendar, Tamil panchangam, daily panchangam, Rahu kalam, Gowri nalla neram, chandrashtamam, nalla neram today, Toronto Tamil calendar, tamil calendar 2026, tithi nakshatram">
 <meta name="theme-color" content="#5c0d0d">
 <meta name="author" content="Ungal Nalla Neram">
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="apple-touch-icon" href="/logo.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Ungal Nalla Neram">
 <meta property="og:title" content="Your Nalla Neram · Today's Tamil Calendar & Panchangam for your city">
@@ -54,7 +56,7 @@
       "@id": "https://www.yournallaneram.com/#org",
       "name": "Ungal Nalla Neram",
       "url": "https://www.yournallaneram.com/",
-      "logo": "https://www.yournallaneram.com/og-image.png",
+      "logo": "https://www.yournallaneram.com/logo.png",
       "sameAs": ["https://www.instagram.com/yournallaneram/", "https://www.youtube.com/@YourNallaNeram"]
     },
     {
@@ -128,12 +130,7 @@ h1,h2,h3,h4{font-family:'Noto Serif Tamil','Cormorant Garamond',serif; font-weig
   backdrop-filter:blur(10px); border-bottom:1px solid rgba(217,182,74,.5); box-shadow:0 4px 20px rgba(54,7,7,.35);}
 .topbar-inner{max-width:var(--maxw); margin:0 auto; display:flex; align-items:center; gap:12px; padding:10px 20px;}
 .brand{display:flex; align-items:center; gap:11px; cursor:pointer; text-decoration:none;}
-.brand .emblem{width:38px; height:38px; filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
-.brand .bt{display:flex; flex-direction:column; line-height:1.05;}
-.brand .bt .ta{font-family:'Noto Serif Tamil',serif; font-size:1.12rem; font-weight:700; color:var(--gold-bright);}
-.brand .bt .en{font-family:'Marcellus',serif; font-size:.62rem; letter-spacing:3px; color:var(--gold2); text-transform:uppercase; opacity:.85;}
-.brand .bt .ta .brand-pre{display:block; font-size:.6rem; font-weight:600; letter-spacing:1px; color:var(--gold2); opacity:.8; line-height:1; margin-bottom:1px;}
-.brand .bt .en .brand-pre{font-size:.85em; letter-spacing:2px; opacity:.75; margin-right:4px;}
+.brand .brand-logo{height:96px; width:auto; border-radius:8px; filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));}
 /* Instagram links (top + footer) */
 .ig-badge{display:inline-flex; align-items:center; justify-content:center; color:#fff;
   background:linear-gradient(45deg,#f09433,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888);}
@@ -784,7 +781,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
 @media(max-width:640px){
   .hero h1{font-size:1.8rem;} .hero .h1-sub{font-size:1.1rem;}
   .section-head h2{font-size:1.45rem;}
-  .brand .bt .ta{font-size:.95rem;}
+  .brand .brand-logo{height:76px;}
   .app-tabbar button{padding:7px 10px; font-size:.76rem;}
   .flagship{padding:22px 18px;} .flagship h3{font-size:1.25rem;}
   .stage{padding:20px 16px 16px; min-height:380px;}
@@ -834,14 +831,7 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
 <div class="topbar">
   <div class="topbar-inner">
     <a class="brand" onclick="document.getElementById('top').scrollIntoView({behavior:'smooth'})">
-      <svg class="emblem" viewBox="0 0 130 100" aria-hidden="true">
-        <g fill="#f3d98b"><circle cx="53" cy="12" r="2.5"/><circle cx="65" cy="8.5" r="3"/><circle cx="77" cy="12" r="2.5"/>
-          <path d="M48 28 L82 28 L78 19 L52 19 Z"/><path d="M43 42 L87 42 L83 30 L47 30 Z"/>
-          <path d="M37 58 L93 58 L88 44 L42 44 Z"/><path d="M30 76 L100 76 L95 60 L35 60 Z"/><rect x="22" y="78" width="86" height="14" rx="2"/></g>
-        <g fill="#5c0d0d"><path d="M60 92 L60 84 Q65 78 70 84 L70 92 Z"/>
-          <rect x="50" y="64" width="5" height="7" rx="1"/><rect x="62.5" y="64" width="5" height="7" rx="1"/><rect x="75" y="64" width="5" height="7" rx="1"/></g>
-      </svg>
-      <span class="bt"><span class="ta"><span class="brand-pre">உங்கள்</span>நல்ல நேரம்</span><span class="en"><span class="brand-pre">Ungal</span>Nalla Neram</span></span>
+      <img class="brand-logo" src="/logo.png" alt="Your Nalla Neram · உங்கள் நல்ல நேரம்">
     </a>
     <div class="navpills">
       <button class="tabbtn active" id="tb0" onclick="showTab(0)"><span class="ta-only">📅 பஞ்சாங்கம்</span><span class="en-only">📅 Panchangam</span></button>
