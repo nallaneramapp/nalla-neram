@@ -2200,7 +2200,7 @@ function renderTodayBanner(){
   const isAuto=document.getElementById('pPlace').value==="auto";
   const locLine=`📍 இடம்: <b>${pl.name.replace("📍 ","")}</b>${isAuto&&AUTOLOC?' <span style="color:#1b6e3a">(தானாக கண்டறியப்பட்டது / auto-detected)</span>':''} · ${pl.lat.toFixed(2)}°, ${pl.lon.toFixed(2)}° · UTC${pl.tz>=0?"+":""}${pl.tz}`;
   document.getElementById('todayBanner').innerHTML =
-   `<div class="today-banner"><h2>🌅 இன்று — ${p.td.yearName} வருடம் ${p.td.month} ${p.td.day}, ${WDAY[p.wd]}</h2>
+   `<div class="today-banner"><h2>🌅 இன்று (${now.getDate()}-${now.getMonth()+1}-${now.getFullYear()}) — ${p.td.yearName} வருடம் ${p.td.month} ${p.td.day}, ${WDAY[p.wd]}</h2>
     <div style="font-size:.8rem;color:#7a5a1e;margin-bottom:4px">${locLine}</div>
     <div>${p.paksha} <b>${p.tithiName}</b> · <b>${NAK[p.ni]}</b> நட்சத்திரம்</div>
     <div style="font-size:.85rem;margin-top:4px">🟢 நல்ல நேரம் (பகல், ராகு/எமகண்டம் நீக்கியது): ${good}</div>
