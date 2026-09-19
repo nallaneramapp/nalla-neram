@@ -619,6 +619,9 @@ body.nn-pro-view .member-hi{display:flex;}
 .badspl{display:inline-block; background:linear-gradient(135deg,#fff3d1,#ffe9a8); color:#8a5a00; border:1px solid var(--gold-line); border-radius:14px; padding:4px 12px; font-size:.85rem; margin:3px; font-weight:600; box-shadow:var(--shadow-sm);}
 .controls{display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;}
 .controls label{display:flex; flex-direction:column; font-size:.78rem; font-weight:700; color:var(--maroon); gap:4px;}
+.date-nav{display:flex; align-items:center; gap:6px;}
+.date-nav-btn{background:var(--paper); border:1.5px solid var(--gold-line); border-radius:8px; width:36px; height:36px; flex:0 0 auto; font-size:1.15rem; font-weight:700; color:var(--maroon); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:filter .14s, background .14s;}
+.date-nav-btn:hover{background:linear-gradient(135deg,var(--gold),var(--gold2)); color:var(--maroon-deep); border-color:var(--gold-bright);}
 input,select{font-family:inherit; padding:9px 11px; border:1.5px solid var(--gold-line); border-radius:10px; background:#fff; font-size:.95rem; color:var(--ink); transition:border-color .15s, box-shadow .15s;}
 input:focus,select:focus{outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,162,39,.18);}
 .btn{background:linear-gradient(135deg,var(--maroon),var(--maroon2)); color:var(--gold-bright); border:none; border-radius:10px; padding:11px 23px; font-family:inherit; font-size:.96rem; font-weight:700; cursor:pointer; box-shadow:var(--shadow-sm); transition:transform .14s, filter .14s;}
@@ -832,6 +835,8 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
      special-days filter row). Force each control onto its own full-width row. */
   .controls label{width:100%;}
   .controls select, .controls input:not([type=date]){width:100%; max-width:100%; box-sizing:border-box;}
+  .date-nav{width:100%;}
+  .date-nav input[type=date]{flex:1; min-width:0;}
   /* input[type=date] was stretched to the full row width like the other fields,
      but its native segments/icon don't fill that space — it just left an odd gap.
      Let it size to its own content instead, capped so it can't overflow. */
@@ -904,7 +909,13 @@ footer .fine{font-size:.74rem; color:#d9b98a; opacity:.7; margin-top:10px; max-w
 
       <div class="card">
         <div class="controls">
-          <label><span class="ta-only">தேதி</span><span class="en-only">Date</span><input type="date" id="pDate"></label>
+          <label><span class="ta-only">தேதி</span><span class="en-only">Date</span>
+            <div class="date-nav">
+              <button type="button" class="date-nav-btn" onclick="shiftPanchDate(-1)" aria-label="Previous day" title="Previous day">‹</button>
+              <input type="date" id="pDate">
+              <button type="button" class="date-nav-btn" onclick="shiftPanchDate(1)" aria-label="Next day" title="Next day">›</button>
+            </div>
+          </label>
           <label><span class="ta-only">இடம்</span><span class="en-only">Place</span><select id="pPlace"></select></label>
           <button class="btn" onclick="renderPanchang()"><span class="ta-only">காண்க</span><span class="en-only">View</span></button>
           <button class="btn" onclick="redetect()" title="Auto-detect my location">📍</button>
@@ -2563,6 +2574,13 @@ function submitFeedback(){
 /* keep a local copy so nothing is lost before the backend feedback table is live */
 function fbFallback(rec){ try{ const all=JSON.parse(localStorage.getItem('nnFeedback')||'[]'); all.push({...rec,at:new Date().toISOString()}); localStorage.setItem('nnFeedback',JSON.stringify(all)); }catch(e){} }
 
+function shiftPanchDate(delta){
+  const inp=document.getElementById('pDate');
+  const [y,m,d]=inp.value.split('-').map(Number);
+  const dt=new Date(y,m-1,d+delta);
+  inp.value=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,'0')+"-"+String(dt.getDate()).padStart(2,'0');
+  renderPanchang();
+}
 function gotoDate(y,m,d){
   document.getElementById('pDate').value=y+"-"+String(m).padStart(2,'0')+"-"+String(d).padStart(2,'0');
   showTab(0); renderPanchang(); window.scrollTo({top:0,behavior:'smooth'});
